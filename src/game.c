@@ -3,10 +3,14 @@
 #include <math.h>
 #include <string.h>
 
+#include "raycast.h"
+
 static const double door_travel_seconds = 65535.0 / (1024.0 * 70.0);
 static const double door_hold_seconds = 300.0 / 70.0;
 static const double player_radius = 0.2;
 static const double guard_patrol_speed = 512.0 * 70.0 / 65536.0;
+static const int guard_direction_x[4] = {1, 0, -1, 0};
+static const int guard_direction_y[4] = {0, -1, 0, 1};
 
 static const StaticKind static_kinds[48] = {
     STATIC_DECORATION, STATIC_BLOCKING, STATIC_BLOCKING, STATIC_BLOCKING,
@@ -214,28 +218,88 @@ static int guard_cell_open(const GameState *game, int x, int y)
     return !tile || tile >= 107;
 }
 
+static int guard_sees_player(const GameState *game, const Guard *guard)
+{
+    const double dx = game->player.x - guard->x;
+    const double dy = game->player.y - guard->y;
+    const double distance = sqrt(dx * dx + dy * dy);
+    if (distance > 1.5 &&
+        dx * guard_direction_x[guard->direction] +
+        dy * guard_direction_y[guard->direction] <= 0.0)
+        return 0;
+    if (distance == 0.0)
+        return 1;
+    RayHit hit;
+    return !raycast_hit(game->map.planes[0], game->door_at, game->doors,
+                        guard->x, guard->y, dx / distance, dy / distance,
+                        &hit) || hit.distance >= distance;
+}
+
+static int move_guard(GameState *game, Guard *guard, uint8_t direction,
+                      double distance)
+{
+    const double next_x = guard->x + guard_direction_x[direction] * distance;
+    const double next_y = guard->y + guard_direction_y[direction] * distance;
+    const double player_x = next_x - game->player.x;
+    const double player_y = next_y - game->player.y;
+    if (player_x * player_x + player_y * player_y < 0.25 ||
+        !guard_cell_open(game, (int)next_x, (int)next_y))
+        return 0;
+    guard->direction = direction;
+    guard->x = next_x;
+    guard->y = next_y;
+    return 1;
+}
+
+static void chase_player(GameState *game, Guard *guard, double distance)
+{
+    if (guard->chase_remaining > 0.0) {
+        const double movement = distance < guard->chase_remaining
+                                    ? distance : guard->chase_remaining;
+        if (move_guard(game, guard, guard->direction, movement)) {
+            guard->chase_remaining -= movement;
+            return;
+        }
+        guard->chase_remaining = 0.0;
+    }
+
+    const double dx = game->player.x - guard->x;
+    const double dy = game->player.y - guard->y;
+    const uint8_t horizontal = dx < 0.0 ? 2 : 0;
+    const uint8_t vertical = dy < 0.0 ? 1 : 3;
+    uint8_t first = vertical;
+    uint8_t second = horizontal;
+    if (fabs(dx) >= fabs(dy)) {
+        first = horizontal;
+        second = vertical;
+    }
+    if (move_guard(game, guard, first, distance) ||
+        move_guard(game, guard, second, distance))
+        guard->chase_remaining = 1.0 - distance;
+}
+
 static void update_guards(GameState *game, double seconds)
 {
-    static const int direction_x[4] = {1, 0, -1, 0};
-    static const int direction_y[4] = {0, -1, 0, 1};
     for (size_t index = 0; index < game->guard_count; ++index) {
         Guard *guard = &game->guards[index];
-        if (!guard->active || !guard->patrol)
+        if (!guard->active)
             continue;
 
-        const size_t cell = (size_t)guard->y * MAP_SIDE + (size_t)guard->x;
-        const uint16_t arrow = game->map.planes[1][cell];
-        /* ponytail: cardinal paths suffice until diagonal actor movement exists. */
-        if (arrow >= 90 && arrow <= 96 && !(arrow & 1u))
-            guard->direction = (arrow - 90) / 2;
+        if (!guard->alerted && guard_sees_player(game, guard))
+            guard->alerted = 1;
+        if (!guard->alerted && !guard->patrol)
+            continue;
 
-        const double next_x = guard->x +
-                              direction_x[guard->direction] * guard_patrol_speed * seconds;
-        const double next_y = guard->y +
-                              direction_y[guard->direction] * guard_patrol_speed * seconds;
-        if (guard_cell_open(game, (int)next_x, (int)next_y)) {
-            guard->x = next_x;
-            guard->y = next_y;
+        if (guard->alerted) {
+            chase_player(game, guard, guard_patrol_speed * 3.0 * seconds);
+        } else {
+            const size_t cell = (size_t)guard->y * MAP_SIDE + (size_t)guard->x;
+            const uint16_t arrow = game->map.planes[1][cell];
+            /* ponytail: cardinal paths suffice until diagonal actor movement exists. */
+            if (arrow >= 90 && arrow <= 96 && !(arrow & 1u))
+                guard->direction = (arrow - 90) / 2;
+            move_guard(game, guard, guard->direction,
+                       guard_patrol_speed * seconds);
         }
 
         guard->animation_seconds = fmod(guard->animation_seconds + seconds,

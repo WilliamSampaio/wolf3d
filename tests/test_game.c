@@ -111,6 +111,47 @@ int main(void)
         game_update(&patrol, &(PlayerCommand){0}, 0.05);
     assert(patrol.guards[0].x < 3.0);
 
+    WolfMap sight_map = open_map();
+    sight_map.planes[1][2 * MAP_SIDE + 4] = 108;
+    GameState sight;
+    game_init(&sight, &sight_map, 1);
+    game_update(&sight, &(PlayerCommand){0}, 0.05);
+    assert(!sight.guards[0].alerted);
+
+    sight_map.planes[1][2 * MAP_SIDE + 4] = 110;
+    game_init(&sight, &sight_map, 1);
+    const double guard_start = sight.guards[0].x;
+    game_update(&sight, &(PlayerCommand){0}, 0.05);
+    assert(sight.guards[0].alerted && sight.guards[0].x < guard_start);
+
+    sight_map.planes[0][2 * MAP_SIDE + 3] = 1;
+    game_init(&sight, &sight_map, 1);
+    game_update(&sight, &(PlayerCommand){0}, 0.05);
+    assert(!sight.guards[0].alerted);
+
+    sight_map = open_map();
+    sight_map.planes[1][2 * MAP_SIDE + 3] = 108;
+    game_init(&sight, &sight_map, 1);
+    game_update(&sight, &(PlayerCommand){0}, 0.05);
+    assert(sight.guards[0].alerted);
+
+    sight_map = open_map();
+    sight_map.planes[0][2 * MAP_SIDE + 3] = 90;
+    sight_map.planes[1][2 * MAP_SIDE + 4] = 110;
+    game_init(&sight, &sight_map, 1);
+    game_update(&sight, &(PlayerCommand){0}, 0.05);
+    assert(!sight.guards[0].alerted);
+
+    sight_map = open_map();
+    sight_map.planes[1][4 * MAP_SIDE + 4] = 110;
+    game_init(&sight, &sight_map, 1);
+    game_update(&sight, &(PlayerCommand){0}, 0.05);
+    assert(sight.guards[0].direction == 2);
+    for (int step = 0; step < 5; ++step) {
+        game_update(&sight, &(PlayerCommand){0}, 0.05);
+        assert(sight.guards[0].direction == 2);
+    }
+
     patrol_map.planes[0][4 * MAP_SIDE + 3] = 107;
     patrol_map.planes[1][4 * MAP_SIDE + 3] = 24;
     game_init(&patrol, &patrol_map, 1);

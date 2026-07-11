@@ -311,12 +311,34 @@ Critérios de aceitação do M5F:
 1. [x] patrulha avança de forma determinística a 0,546875 célula por segundo;
 2. [x] setas cardinais alteram a direção e obstáculos interrompem o movimento;
 3. [x] os quatro quadros de caminhada seguem o ciclo original de 80 tics;
-4. [ ] patrulhas são validadas visualmente no primeiro mapa shareware;
+4. [x] patrulhas são validadas visualmente no primeiro mapa shareware;
 5. [x] build, testes e smoke checks continuam passando.
 6. [x] rotações laterais correspondem à direção cardinal do movimento.
 
 Setas diagonais, abertura de portas por atores, colisão entre atores, percepção,
 perseguição e combate permanecem fora do M5F.
+
+### M5G — contrato de percepção e perseguição
+
+- detectar o jogador próximo independentemente da direção do guarda;
+- exigir campo frontal e linha de visão livre para detecção à distância;
+- preservar deterministicamente o estado de alerta após a primeira detecção;
+- perseguir o jogador por eixos cardinais, priorizando o maior deslocamento;
+- usar três vezes a velocidade de patrulha e respeitar os mesmos obstáculos;
+- impedir que o guarda avance sobre a posição do jogador.
+
+Critérios de aceitação do M5G:
+
+1. [x] jogador próximo ou visível à frente alerta o guarda;
+2. [x] paredes, portas e orientação impedem detecção à distância;
+3. [x] guarda alertado reduz a distância até o jogador sem atravessar obstáculos;
+4. [x] guardas parados e em patrulha usam a mesma perseguição determinística;
+5. [ ] percepção e perseguição são validadas no primeiro mapa shareware;
+6. [x] build, testes e smoke checks continuam passando.
+7. [x] a direção escolhida permanece estável durante cada célula de perseguição.
+
+Tempo de reação, abertura de portas, coordenação entre guardas, ataques, dano,
+mortes, drops, som e conectividade de áreas permanecem fora do M5G.
 
 ## Regra de documentação
 

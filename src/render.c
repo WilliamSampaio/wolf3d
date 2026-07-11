@@ -44,7 +44,8 @@ static size_t guard_sprite(const Guard *guard, const Player *player)
         relative += 2.0 * pi;
     while (relative >= 2.0 * pi)
         relative -= 2.0 * pi;
-    const size_t base = guard->patrol ? walking_sprite[guard->frame] : 50;
+    const size_t base = guard->patrol || guard->alerted
+                            ? walking_sprite[guard->frame] : 50;
     return base + ((int)(relative / (pi / 4.0) + 0.5) & 7);
 }
 

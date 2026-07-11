@@ -50,8 +50,10 @@ typedef struct {
     uint8_t direction;
     uint8_t patrol;
     uint8_t active;
+    uint8_t alerted;
     uint8_t frame;
     double animation_seconds;
+    double chase_remaining;
 } Guard;
 
 enum {
