@@ -22,10 +22,13 @@ portável estiver funcional.
 - visão superior estática com paredes, portas e orientação do jogador;
 - carregamento das 106 páginas de parede, incluindo páginas esparsas;
 - raycasting DDA com paredes texturizadas e câmera inicial estática;
+- movimento e rotação independentes da taxa de quadros;
+- colisão com raio contra paredes, portas fechadas e limites do mapa;
+- controle horizontal da câmera com mouse em modo relativo;
 - código histórico preservado em `WOLFSRC/`.
 
-O jogo original ainda não é jogável. A primeira cena 3D estática foi validada;
-movimento e colisão pertencem ao próximo marco.
+O primeiro mapa pode ser explorado com teclado e mouse, ambos validados. Portas
+ainda permanecem fechadas e não há sprites, atores, combate, HUD ou áudio.
 
 ## Compilar no Linux
 
@@ -36,6 +39,9 @@ cmake -S . -B build
 cmake --build build
 ./build/wolf3d --data data/shareware-v1.4
 ```
+
+Controles: `W`/`↑` avança, `S`/`↓` recua, `A`/`←` e `D`/`→` giram, o mouse
+controla a direção horizontal e `Esc` encerra.
 
 Verificação rápida:
 

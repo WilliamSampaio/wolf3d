@@ -1,4 +1,5 @@
 #include <SDL2/SDL.h>
+#include <math.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -6,6 +7,7 @@
 #include "data_files.h"
 #include "game_palette.h"
 #include "map.h"
+#include "player.h"
 #include "raycast.h"
 #include "vswap.h"
 
@@ -20,28 +22,23 @@ static uint32_t palette_color(uint8_t index, int brightness)
 }
 
 static void render_scene(uint32_t pixels[WIDTH * HEIGHT], const WolfMap *map,
-                         const VSwapWalls *walls)
+                         const VSwapWalls *walls, const Player *player)
 {
     for (int y = 0; y < HEIGHT; ++y)
         for (int x = 0; x < WIDTH; ++x)
             pixels[y * WIDTH + x] = palette_color(y < HEIGHT / 2 ? 0x1d : 0x19, 4);
 
-    static const double directions[4][2] = {
-        {0.0, -1.0}, {1.0, 0.0}, {0.0, 1.0}, {-1.0, 0.0}
-    };
-    const double direction_x = directions[map->player_direction][0];
-    const double direction_y = directions[map->player_direction][1];
+    const double direction_x = cos(player->angle);
+    const double direction_y = sin(player->angle);
     const double plane_x = -direction_y * 0.66;
     const double plane_y = direction_x * 0.66;
-    const double player_x = map->player_x + 0.5;
-    const double player_y = map->player_y + 0.5;
 
     for (int x = 0; x < WIDTH; ++x) {
         const double camera_x = 2.0 * x / WIDTH - 1.0;
         const double ray_x = direction_x + plane_x * camera_x;
         const double ray_y = direction_y + plane_y * camera_x;
         RayHit hit;
-        if (!raycast_hit(map->planes[0], player_x, player_y, ray_x, ray_y, &hit))
+        if (!raycast_hit(map->planes[0], player->x, player->y, ray_x, ray_y, &hit))
             continue;
 
         size_t page = 0;
@@ -78,6 +75,7 @@ int main(int argc, char **argv)
     const char *edition = NULL;
     VSwapWalls walls = {0};
     WolfMap map;
+    Player player;
 
     for (int i = 1; i < argc; ++i) {
         if (strcmp(argv[i], "--check") == 0)
@@ -126,6 +124,7 @@ int main(int argc, char **argv)
         }
         printf("Mapa 0 '%s' OK; jogador em %d,%d\n",
                map.name, map.player_x, map.player_y);
+        player_init(&player, &map);
     }
 
     const uint32_t flags = check_only ? SDL_INIT_TIMER : SDL_INIT_VIDEO;
@@ -158,18 +157,42 @@ int main(int argc, char **argv)
         SDL_Quit();
         return 1;
     }
+    if (SDL_SetRelativeMouseMode(SDL_TRUE) < 0) {
+        fprintf(stderr, "SDL mouse: %s\n", SDL_GetError());
+        SDL_DestroyTexture(texture);
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
+        vswap_free_walls(&walls);
+        SDL_Quit();
+        return 1;
+    }
 
     uint32_t pixels[WIDTH * HEIGHT];
-    render_scene(pixels, &map, &walls);
-    vswap_free_walls(&walls);
+    uint64_t previous = SDL_GetPerformanceCounter();
+    const double frequency = (double)SDL_GetPerformanceFrequency();
 
     for (int running = 1; running;) {
         SDL_Event event;
-        while (SDL_PollEvent(&event))
+        int mouse_x = 0;
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_MOUSEMOTION)
+                mouse_x += event.motion.xrel;
             if (event.type == SDL_QUIT ||
                 (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE))
                 running = 0;
+        }
 
+        const uint64_t now = SDL_GetPerformanceCounter();
+        const double seconds = (now - previous) / frequency;
+        previous = now;
+        const uint8_t *keys = SDL_GetKeyboardState(NULL);
+        const double forward = (keys[SDL_SCANCODE_W] || keys[SDL_SCANCODE_UP]) -
+                               (keys[SDL_SCANCODE_S] || keys[SDL_SCANCODE_DOWN]);
+        const double turn = (keys[SDL_SCANCODE_D] || keys[SDL_SCANCODE_RIGHT]) -
+                            (keys[SDL_SCANCODE_A] || keys[SDL_SCANCODE_LEFT]);
+        player_rotate(&player, mouse_x * 0.0025);
+        player_update(&player, map.planes[0], forward, turn, seconds);
+        render_scene(pixels, &map, &walls, &player);
         SDL_UpdateTexture(texture, NULL, pixels, WIDTH * (int)sizeof(*pixels));
         SDL_RenderClear(renderer);
         SDL_RenderCopy(renderer, texture, NULL, NULL);
@@ -180,6 +203,7 @@ int main(int argc, char **argv)
     SDL_DestroyTexture(texture);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
+    vswap_free_walls(&walls);
     SDL_Quit();
     return 0;
 }

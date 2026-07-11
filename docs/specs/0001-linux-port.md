@@ -37,7 +37,7 @@ plataforma.
 - [x] M1 — localizar, abrir e validar arquivos de dados originais.
 - [x] M2 — carregar paleta e primeiro recurso gráfico.
 - [x] M3 — carregar mapa e renderizar uma cena estática.
-- [ ] M4 — movimento, colisão e entrada jogável.
+- [x] M4 — movimento, colisão e entrada jogável.
 - [ ] M5 — atores, interface, áudio e fluxo completo do jogo.
 
 ## Critérios de aceitação atuais
@@ -125,6 +125,47 @@ Critérios de aceitação do M3B:
 Movimento, colisões, interação com portas, sprites, atores, HUD e áudio permanecem fora do M3B.
 
 A cena 3D estática foi validada manualmente com o conjunto shareware v1.4.
+
+### M4A — contrato de movimento e colisão
+
+- iniciar o jogador no centro da célula e orientação definidas pelo mapa;
+- avançar/recuar com `W`/`S` ou setas para cima/baixo;
+- girar com `A`/`D` ou setas para esquerda/direita;
+- aplicar velocidades por segundo usando o tempo real entre frames, limitado a 50 ms;
+- bloquear paredes, portas fechadas e limites usando um raio de colisão;
+- resolver X e Y separadamente para permitir deslizamento junto às paredes;
+- recalcular e apresentar a cena 3D a cada frame.
+
+Critérios de aceitação do M4A:
+
+1. [x] teste sintético comprova avanço em área livre e rotação;
+2. [x] jogador não entra em parede, porta fechada ou fora do mapa;
+3. [x] colisão diagonal permite deslizamento por um eixo livre;
+4. [x] controles respondem de forma estável em diferentes taxas de quadro;
+5. [x] build, `--check` e todos os testes anteriores continuam passando;
+6. [x] movimentação e colisão são validadas manualmente no mapa shareware.
+
+Abrir portas, corrida, tiros, sprites, atores, HUD e áudio permanecem fora do M4A.
+
+### M4B — contrato do mouse
+
+- capturar o mouse em modo relativo enquanto a janela estiver ativa;
+- converter apenas o deslocamento horizontal em rotação imediata;
+- usar sensibilidade inicial fixa de `0.0025` radianos por pixel;
+- normalizar o ângulo após movimentos grandes ou repetidos;
+- manter teclado, colisão e `Esc` inalterados.
+
+Critérios de aceitação do M4B:
+
+1. [x] teste comprova rotação positiva, negativa e normalização do ângulo;
+2. [x] eixo vertical do mouse não altera o jogador;
+3. [x] build, `--check` e todos os testes anteriores continuam passando;
+4. [x] controle do olhar com mouse é validado manualmente.
+
+Configuração de sensibilidade, movimento vertical e menus permanecem fora do M4B.
+
+O movimento, a colisão, o teclado e o mouse relativo foram validados manualmente
+no mapa shareware.
 
 ## Regra de documentação
 
