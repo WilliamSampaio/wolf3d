@@ -162,9 +162,32 @@ int main(void)
     patrol_map.planes[1][4 * MAP_SIDE + 3] = 0;
     patrol_map.planes[0][4 * MAP_SIDE + 3] = 90;
     game_init(&patrol, &patrol_map, 1);
-    for (int step = 0; step < 40; ++step)
+    for (int step = 0; step < 20; ++step)
         game_update(&patrol, &(PlayerCommand){0}, 0.05);
     assert(patrol.guards[0].x < 3.0);
+    assert(patrol.doors[0].action == DOOR_OPENING);
+    for (int step = 0; step < 25; ++step)
+        game_update(&patrol, &(PlayerCommand){0}, 0.05);
+    assert(patrol.guards[0].x > 3.0);
+
+    patrol.doors[0].action = DOOR_OPEN;
+    patrol.doors[0].position = 1.0;
+    patrol.doors[0].open_seconds = 300.0 / 70.0;
+    patrol.guards[0].x = 3.5;
+    patrol.guards[0].y = 4.5;
+    patrol.guards[0].patrol = 0;
+    for (int step = 0; step < 10; ++step)
+        game_update(&patrol, &(PlayerCommand){0}, 0.05);
+    assert(patrol.doors[0].action == DOOR_OPENING);
+
+    for (uint16_t tile = 92; tile <= 100; tile += 8) {
+        patrol_map.planes[0][4 * MAP_SIDE + 3] = tile;
+        game_init(&patrol, &patrol_map, 1);
+        for (int step = 0; step < 40; ++step)
+            game_update(&patrol, &(PlayerCommand){0}, 0.05);
+        assert(patrol.guards[0].x < 3.0);
+        assert(patrol.doors[0].action == DOOR_CLOSED);
+    }
 
     GameState pickup = game_with_object(47);
     pickup.health = 90;

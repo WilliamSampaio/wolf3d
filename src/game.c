@@ -127,8 +127,17 @@ static void collect_at_player(GameState *game)
 static int door_obstructed(const GameState *game, const Door *door,
                            double position)
 {
-    return door_blocks_circle(door, position, game->player.x, game->player.y,
-                              player_radius);
+    if (door_blocks_circle(door, position, game->player.x, game->player.y,
+                           player_radius))
+        return 1;
+    for (size_t index = 0; index < game->guard_count; ++index) {
+        const Guard *guard = &game->guards[index];
+        if (guard->active &&
+            door_blocks_circle(door, position, guard->x, guard->y,
+                               player_radius))
+            return 1;
+    }
+    return 0;
 }
 
 static void operate_door(GameState *game, Door *door)
@@ -240,10 +249,21 @@ static int move_guard(GameState *game, Guard *guard, uint8_t direction,
 {
     const double next_x = guard->x + guard_direction_x[direction] * distance;
     const double next_y = guard->y + guard_direction_y[direction] * distance;
+    const int tile_x = (int)next_x;
+    const int tile_y = (int)next_y;
     const double player_x = next_x - game->player.x;
     const double player_y = next_y - game->player.y;
+    if (tile_x >= 0 && tile_x < MAP_SIDE && tile_y >= 0 && tile_y < MAP_SIDE) {
+        const int door_index = game->door_at[tile_y * MAP_SIDE + tile_x];
+        if (door_index >= 0) {
+            Door *door = &game->doors[door_index];
+            if (door->kind == DOOR_NORMAL &&
+                (door->action == DOOR_CLOSED || door->action == DOOR_CLOSING))
+                door->action = DOOR_OPENING;
+        }
+    }
     if (player_x * player_x + player_y * player_y < 0.25 ||
-        !guard_cell_open(game, (int)next_x, (int)next_y))
+        !guard_cell_open(game, tile_x, tile_y))
         return 0;
     guard->direction = direction;
     guard->x = next_x;

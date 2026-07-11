@@ -33,14 +33,14 @@ portável estiver funcional.
 - objetos sólidos participam da colisão e pickups atualizam o estado do jogador;
 - vida, munição, armas, chaves, vidas, score e tesouros mantidos na simulação;
 - portas móveis com abertura parcial, fechaduras, colisão e fechamento automático;
-- guardas comuns patrulham, detectam o jogador e fazem perseguição cardinal;
+- guardas comuns patrulham, perseguem o jogador e atravessam portas normais;
 - código histórico preservado em `WOLFSRC/`.
 
 O primeiro mapa pode ser explorado com teclado e mouse. Portas abrem com `Space`,
 fecham automaticamente e respeitam as chaves coletadas. Guardas patrulham,
-percebem e perseguem o jogador, mas ainda não atacam; também não há HUD ou áudio.
-Objetos sólidos bloqueiam movimento; itens aplicáveis são coletados e desaparecem
-do cenário.
+percebem e perseguem o jogador, abrindo portas normais, mas ainda não atacam;
+também não há HUD ou áudio. Objetos sólidos bloqueiam movimento; itens aplicáveis
+são coletados e desaparecem do cenário.
 
 ## Compilar no Linux
 

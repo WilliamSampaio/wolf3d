@@ -333,12 +333,31 @@ Critérios de aceitação do M5G:
 2. [x] paredes, portas e orientação impedem detecção à distância;
 3. [x] guarda alertado reduz a distância até o jogador sem atravessar obstáculos;
 4. [x] guardas parados e em patrulha usam a mesma perseguição determinística;
-5. [ ] percepção e perseguição são validadas no primeiro mapa shareware;
+5. [x] percepção e perseguição são validadas no primeiro mapa shareware;
 6. [x] build, testes e smoke checks continuam passando.
 7. [x] a direção escolhida permanece estável durante cada célula de perseguição.
 
 Tempo de reação, abertura de portas, coordenação entre guardas, ataques, dano,
 mortes, drops, som e conectividade de áreas permanecem fora do M5G.
+
+### M5H — contrato de portas operadas por guardas
+
+- abrir portas normais quando uma patrulha ou perseguição tentar atravessá-las;
+- aguardar a abertura completa antes de entrar na célula da porta;
+- impedir que portas fechem sobre guardas durante a travessia;
+- manter portas trancadas e de elevador indisponíveis para atores.
+
+Critérios de aceitação do M5H:
+
+1. [x] guarda inicia a abertura de uma porta normal e aguarda fora da célula;
+2. [x] guarda retoma o movimento após a abertura completa;
+3. [x] porta aberta não fecha enquanto um guarda obstrui seu plano;
+4. [x] guardas não operam portas trancadas ou de elevador;
+5. [ ] interação é validada no primeiro mapa shareware;
+6. [x] build, testes e smoke checks continuam passando.
+
+Escolha de rotas alternativas, chaves para atores, coordenação entre guardas,
+combate, HUD e áudio permanecem fora do M5H.
 
 ## Regra de documentação
 
