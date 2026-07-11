@@ -28,10 +28,13 @@ portável estiver funcional.
 - estado portátil de jogo e comandos de entrada independentes de SDL2;
 - carregamento de mapas por índice e RNG determinístico para a simulação;
 - módulos portáveis reunidos na biblioteca `wolf3d_core`;
+- catálogo completo do `VSWAP` e decodificação segura de sprites compilados;
+- objetos estáticos renderizados com transparência e oclusão por paredes;
 - código histórico preservado em `WOLFSRC/`.
 
 O primeiro mapa pode ser explorado com teclado e mouse, ambos validados. Portas
-ainda permanecem fechadas e não há sprites, atores, combate, HUD ou áudio.
+ainda permanecem fechadas e não há atores, combate, HUD ou áudio. Os sprites
+estáticos são visíveis, mas ainda não bloqueiam movimento nem podem ser coletados.
 
 ## Compilar no Linux
 

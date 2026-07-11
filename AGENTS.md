@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-`src/` contains portable C; `map.c` decodes maps, `raycast.c` traces walls, and `player.c` handles movement/collision. `tests/` contains C tests. `docs/specs/` contains SDD contracts. `data/` preserves the shareware ZIP and `.WL1` files; keep `data/README.md` current. `WOLFSRC/` is the untouched DOS reference. Root artifacts and `README.rst` must remain unchanged. CMake writes to ignored `build/`.
+`src/` contains portable C; `map.c` decodes maps, `raycast.c` traces walls, `render.c` draws walls/sprites, and `player.c` handles movement/collision. `tests/` contains C tests. `docs/specs/` contains SDD contracts. `data/` preserves the shareware ZIP and `.WL1` files; keep `data/README.md` current. `WOLFSRC/` is the untouched DOS reference. Root artifacts and `README.rst` must remain unchanged. CMake writes to ignored `build/`.
 
 ## Spec-Driven Workflow
 

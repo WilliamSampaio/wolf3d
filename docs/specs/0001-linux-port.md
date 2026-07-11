@@ -39,7 +39,8 @@ plataforma.
 - [x] M3 — carregar mapa e renderizar uma cena estática.
 - [x] M4 — movimento, colisão e entrada jogável.
 - [ ] M5 — campanha shareware com atores, interface, áudio PCM e fluxo completo.
-  - [ ] M5A — fundação portátil da simulação.
+  - [x] M5A — fundação portátil da simulação.
+  - [ ] M5B — catálogo VSWAP e sprites estáticos.
 
 ## Critérios de aceitação atuais
 
@@ -197,13 +198,34 @@ Critérios de aceitação do M5A:
 1. [x] a simulação do jogador pode ser atualizada por teste sem inicializar SDL2;
 2. [x] duas sequências com a mesma semente produzem os mesmos valores aleatórios;
 3. [x] índices de mapa ausentes ou fora do cabeçalho são rejeitados com segurança;
-4. [ ] o mapa 0 shareware continua carregando e jogável com os controles do M4;
+4. [x] o mapa 0 shareware continua carregando e jogável com os controles do M4;
 5. [x] build, `--check` e todos os testes anteriores continuam passando.
 
 Portas, sprites, objetos, inventário, atores, combate, HUD, áudio e progressão
 permanecem fora do M5A. O alvo posterior do M5 é a campanha `WL1`; suporte
 validado a `WL6`, música AdLib/OPL, saves e menus completos não fazem parte deste
 marco.
+
+### M5B — contrato do catálogo VSWAP e sprites estáticos
+
+- ler e validar o diretório completo de chunks do `VSWAP` uma única vez;
+- preservar os limites entre paredes, sprites e sons para os próximos marcos;
+- decodificar sprites compilados para pixels indexados e máscara transparente;
+- rejeitar limites, offsets, posts e fontes de pixels fora da página;
+- manter profundidade por coluna para ocultar sprites atrás de paredes;
+- projetar os objetos estáticos 23–70 do plano de objetos no cenário 3D.
+
+Critérios de aceitação do M5B:
+
+1. [x] testes sintéticos comprovam posts, transparência e orientação do sprite;
+2. [x] páginas truncadas e comandos fora dos limites são rejeitados;
+3. [x] todas as páginas de sprite do conjunto shareware são decodificadas;
+4. [x] sprites atrás de paredes são ocultados pelo depth buffer;
+5. [ ] objetos estáticos do primeiro mapa são validados visualmente;
+6. [x] build, `--check` e todos os testes anteriores continuam passando.
+
+Coleta, bloqueio por objetos, portas móveis, atores e animações permanecem fora
+do M5B.
 
 ## Regra de documentação
 

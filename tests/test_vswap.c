@@ -4,6 +4,10 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#ifndef TEST_DATA_DIR
+#define TEST_DATA_DIR "data/shareware-v1.4"
+#endif
+
 static void write_u16(FILE *file, uint16_t value)
 {
     fputc(value & 0xff, file);
@@ -59,6 +63,37 @@ int main(void)
     fputc(1, file);
     rewind(file);
     assert(!vswap_read_first_wall(file, pixels, error, sizeof(error)));
+    fclose(file);
+
+    const uint8_t sprite_data[] = {
+        3, 0, 3, 0, 6, 0,
+        16, 0, 10, 0, 12, 0,
+        0, 0, 0, 0, 42, 43
+    };
+    VSwapSprite sprite;
+    assert(vswap_decode_sprite(sprite_data, sizeof(sprite_data), &sprite,
+                               error, sizeof(error)));
+    assert(sprite.left == 3 && sprite.right == 3);
+    assert(!sprite.mask[5 * WALL_SIZE + 3]);
+    assert(sprite.mask[6 * WALL_SIZE + 3] && sprite.pixels[6 * WALL_SIZE + 3] == 42);
+    assert(sprite.mask[7 * WALL_SIZE + 3] && sprite.pixels[7 * WALL_SIZE + 3] == 43);
+    uint8_t invalid_sprite[sizeof(sprite_data)];
+    for (size_t i = 0; i < sizeof(sprite_data); ++i)
+        invalid_sprite[i] = sprite_data[i];
+    invalid_sprite[4] = 0xff;
+    invalid_sprite[5] = 0xff;
+    assert(!vswap_decode_sprite(invalid_sprite, sizeof(invalid_sprite), &sprite,
+                                error, sizeof(error)));
+
+    char path[4096];
+    assert(snprintf(path, sizeof(path), "%s/VSWAP.WL1", TEST_DATA_DIR) > 0);
+    file = fopen(path, "rb");
+    assert(file);
+    VSwap vswap;
+    assert(vswap_load(file, &vswap, error, sizeof(error)));
+    assert(vswap.walls.count == 106);
+    assert(vswap.sprite_count > 48);
+    vswap_free(&vswap);
     fclose(file);
     puts("VSWAP OK");
     return 0;
