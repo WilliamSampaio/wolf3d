@@ -229,6 +229,15 @@ void game_init(GameState *game, const WolfMap *map, uint32_t random_seed)
 
     for (size_t cell = 0; cell < MAP_CELLS; ++cell) {
         const uint16_t code = game->map.planes[1][cell];
+        if (code >= 108 && code <= 115) {
+            Guard *guard = &game->guards[game->guard_count++];
+            guard->x = cell % MAP_SIDE + 0.5;
+            guard->y = cell / MAP_SIDE + 0.5;
+            guard->direction = (code - 108) % 4;
+            guard->patrol = code >= 112;
+            guard->active = 1;
+            continue;
+        }
         if (code < 23 || code > 70)
             continue;
         StaticObject *object = &game->statics[game->static_count++];

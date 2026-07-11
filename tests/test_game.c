@@ -80,6 +80,17 @@ int main(void)
         blocking_count += blocked.blocked[3 * MAP_SIDE + x] != 0;
     assert(blocking_count == 21);
 
+    WolfMap guards = open_map();
+    for (int type = 0; type < 8; ++type)
+        guards.planes[1][4 * MAP_SIDE + type + 1] = 108 + type;
+    game_init(&blocked, &guards, 1);
+    assert(blocked.guard_count == 8);
+    for (int type = 0; type < 8; ++type) {
+        assert(blocked.guards[type].direction == type % 4);
+        assert(blocked.guards[type].patrol == (type >= 4));
+        assert(blocked.guards[type].active);
+    }
+
     GameState pickup = game_with_object(47);
     pickup.health = 90;
     update_once(&pickup);

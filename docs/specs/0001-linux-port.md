@@ -275,6 +275,28 @@ Critérios de aceitação do M5D:
 Sons, atores, conectividade de áreas, pushwalls e conclusão por elevador
 permanecem fora do M5D.
 
+### M5E — contrato da fundação de atores
+
+- instanciar guardas comuns dos códigos 108–115 do plano de objetos;
+- preservar posição, direção cardinal e origem parada ou em patrulha;
+- renderizar guardas pelo mesmo pipeline de sprites, profundidade e oclusão dos
+  objetos estáticos;
+- selecionar uma das oito rotações do sprite conforme a direção do guarda e a
+  posição do jogador;
+- ignorar com segurança códigos de dificuldade e classes ainda não suportadas.
+
+Critérios de aceitação do M5E:
+
+1. [x] testes sintéticos cobrem os oito códigos, direções e origem do guarda;
+2. [x] guardas são ocultados por paredes como os demais sprites;
+3. [x] mudar a direção do guarda seleciona outra rotação visível;
+4. [ ] guardas do primeiro mapa shareware são validados visualmente;
+5. [x] build, testes e smoke checks continuam passando.
+
+Movimento, animação, percepção, perseguição, ataques, dano, mortes, outras
+classes de atores, HUD e áudio permanecem fora do M5E. Um estado direto para o
+único ator suportado evita antecipar uma máquina de estados genérica.
+
 ## Regra de documentação
 
 Cada mudança funcional deve atualizar seu marco e critérios nesta especificação,

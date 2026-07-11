@@ -44,6 +44,14 @@ typedef struct {
     StaticKind kind;
 } StaticObject;
 
+typedef struct {
+    double x;
+    double y;
+    uint8_t direction;
+    uint8_t patrol;
+    uint8_t active;
+} Guard;
+
 enum {
     WEAPON_KNIFE,
     WEAPON_PISTOL,
@@ -57,6 +65,8 @@ typedef struct {
     uint32_t random_state;
     StaticObject statics[MAP_CELLS];
     size_t static_count;
+    Guard guards[MAP_CELLS];
+    size_t guard_count;
     uint8_t blocked[MAP_CELLS];
     int health;
     int ammo;

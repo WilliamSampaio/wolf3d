@@ -12,7 +12,7 @@ typedef struct {
     double y;
     double distance_squared;
     size_t sprite;
-} VisibleStatic;
+} VisibleSprite;
 
 static uint32_t palette_color(uint8_t index, int brightness)
 {
@@ -24,8 +24,8 @@ static uint32_t palette_color(uint8_t index, int brightness)
 
 static int compare_distance(const void *left, const void *right)
 {
-    const VisibleStatic *a = left;
-    const VisibleStatic *b = right;
+    const VisibleSprite *a = left;
+    const VisibleSprite *b = right;
     if (a->distance_squared < b->distance_squared)
         return 1;
     if (a->distance_squared > b->distance_squared)
@@ -33,7 +33,19 @@ static int compare_distance(const void *left, const void *right)
     return 0;
 }
 
-static size_t collect_statics(VisibleStatic statics[MAP_CELLS],
+static size_t guard_sprite(const Guard *guard, const Player *player)
+{
+    const double pi = 3.14159265358979323846;
+    const double facing = -guard->direction * pi / 2.0;
+    double relative = atan2(player->y - guard->y, player->x - guard->x) - facing;
+    while (relative < 0.0)
+        relative += 2.0 * pi;
+    while (relative >= 2.0 * pi)
+        relative -= 2.0 * pi;
+    return 50 + ((int)(relative / (pi / 4.0) + 0.5) & 7);
+}
+
+static size_t collect_sprites(VisibleSprite sprites[MAP_CELLS * 2],
                               const GameState *game, const VSwap *vswap)
 {
     size_t count = 0;
@@ -45,16 +57,27 @@ static size_t collect_statics(VisibleStatic statics[MAP_CELLS],
         const double y = object->y + 0.5;
         const double dx = x - game->player.x;
         const double dy = y - game->player.y;
-        statics[count++] = (VisibleStatic){
+        sprites[count++] = (VisibleSprite){
             x, y, dx * dx + dy * dy, object->sprite
         };
     }
-    qsort(statics, count, sizeof(*statics), compare_distance);
+    for (size_t index = 0; index < game->guard_count; ++index) {
+        const Guard *guard = &game->guards[index];
+        const size_t sprite = guard_sprite(guard, &game->player);
+        if (!guard->active || sprite >= vswap->sprite_count)
+            continue;
+        const double dx = guard->x - game->player.x;
+        const double dy = guard->y - game->player.y;
+        sprites[count++] = (VisibleSprite){
+            guard->x, guard->y, dx * dx + dy * dy, sprite
+        };
+    }
+    qsort(sprites, count, sizeof(*sprites), compare_distance);
     return count;
 }
 
 static void draw_sprite(uint32_t pixels[RENDER_WIDTH * RENDER_HEIGHT],
-                        const VSwapSprite *sprite, const VisibleStatic *object,
+                         const VSwapSprite *sprite, const VisibleSprite *object,
                         const Player *player, const double depth[RENDER_WIDTH])
 {
     const double direction_x = cos(player->angle);
@@ -157,9 +180,9 @@ void render_scene(uint32_t pixels[RENDER_WIDTH * RENDER_HEIGHT],
         }
     }
 
-    VisibleStatic statics[MAP_CELLS];
-    const size_t count = collect_statics(statics, game, vswap);
+    VisibleSprite sprites[MAP_CELLS * 2];
+    const size_t count = collect_sprites(sprites, game, vswap);
     for (size_t index = 0; index < count; ++index)
-        draw_sprite(pixels, &vswap->sprites[statics[index].sprite],
-                    &statics[index], player, depth);
+        draw_sprite(pixels, &vswap->sprites[sprites[index].sprite],
+                    &sprites[index], player, depth);
 }
