@@ -53,9 +53,12 @@ typedef struct {
     uint8_t alerted;
     uint8_t frame;
     uint8_t dead;
+    uint8_t shooting;
+    uint8_t shoot_frame;
     int health;
     double animation_seconds;
     double death_seconds;
+    double shoot_seconds;
     double move_remaining;
 } Guard;
 
@@ -76,6 +79,7 @@ typedef struct {
     size_t guard_count;
     uint8_t blocked[MAP_CELLS];
     int health;
+    double damage_seconds;
     int ammo;
     int lives;
     int score;

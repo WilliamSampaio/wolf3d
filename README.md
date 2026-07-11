@@ -36,13 +36,14 @@ portável estiver funcional.
 - guardas comuns patrulham por células, perseguem e atravessam portas normais;
 - disparos atingem guardas, consomem munição e deixam cadáveres;
 - pistola inicial exibida em primeira pessoa com animação de disparo;
+- guardas próximos atiram e causam dano com feedback visual;
 - código histórico preservado em `WOLFSRC/`.
 
 O primeiro mapa pode ser explorado com teclado e mouse. Portas abrem com `Space`,
 fecham automaticamente e respeitam as chaves coletadas. Guardas patrulham,
-percebem e perseguem o jogador, abrindo portas normais, mas ainda não atacam;
-também não há HUD ou áudio. Objetos sólidos bloqueiam movimento; itens aplicáveis
-são coletados e desaparecem do cenário.
+percebem, perseguem e atiram no jogador, abrindo portas normais quando necessário;
+ainda não há HUD, morte do jogador ou áudio. Objetos sólidos bloqueiam movimento;
+itens aplicáveis são coletados e desaparecem do cenário.
 
 ## Compilar no Linux
 

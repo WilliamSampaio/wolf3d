@@ -125,13 +125,13 @@ int main(void)
     assert(patrol.guards[0].x < 3.0);
 
     WolfMap sight_map = open_map();
-    sight_map.planes[1][2 * MAP_SIDE + 4] = 108;
+    sight_map.planes[1][2 * MAP_SIDE + 7] = 108;
     GameState sight;
     game_init(&sight, &sight_map, 1);
     game_update(&sight, &(PlayerCommand){0}, 0.05);
     assert(!sight.guards[0].alerted);
 
-    sight_map.planes[1][2 * MAP_SIDE + 4] = 110;
+    sight_map.planes[1][2 * MAP_SIDE + 7] = 110;
     game_init(&sight, &sight_map, 1);
     const double guard_start = sight.guards[0].x;
     game_update(&sight, &(PlayerCommand){0}, 0.05);
@@ -156,7 +156,7 @@ int main(void)
     assert(!sight.guards[0].alerted);
 
     sight_map = open_map();
-    sight_map.planes[1][4 * MAP_SIDE + 4] = 110;
+    sight_map.planes[1][7 * MAP_SIDE + 7] = 110;
     game_init(&sight, &sight_map, 1);
     game_update(&sight, &(PlayerCommand){0}, 0.05);
     assert(sight.guards[0].direction == 2);
@@ -164,6 +164,31 @@ int main(void)
         game_update(&sight, &(PlayerCommand){0}, 0.05);
         assert(sight.guards[0].direction == 2);
     }
+
+    WolfMap attack_map = open_map();
+    attack_map.planes[1][2 * MAP_SIDE + 4] = 110;
+    GameState enemy_shot;
+    game_init(&enemy_shot, &attack_map, 1);
+    const double shooting_x = enemy_shot.guards[0].x;
+    game_update(&enemy_shot, &(PlayerCommand){0}, 0.05);
+    assert(enemy_shot.guards[0].shooting);
+    for (int step = 0; step < 12; ++step)
+        game_update(&enemy_shot, &(PlayerCommand){0}, 0.05);
+    assert(enemy_shot.health < 100 && enemy_shot.damage_seconds > 0.0);
+    assert(enemy_shot.guards[0].x == shooting_x);
+    for (int step = 0; step < 6; ++step)
+        game_update(&enemy_shot, &(PlayerCommand){0}, 0.05);
+    assert(!enemy_shot.guards[0].shooting);
+    enemy_shot.player.x = 10.5;
+    game_update(&enemy_shot, &(PlayerCommand){0}, 0.05);
+    assert(enemy_shot.guards[0].x > shooting_x);
+
+    game_init(&enemy_shot, &attack_map, 1);
+    enemy_shot.health = 1;
+    game_update(&enemy_shot, &(PlayerCommand){0}, 0.05);
+    for (int step = 0; step < 12; ++step)
+        game_update(&enemy_shot, &(PlayerCommand){0}, 0.05);
+    assert(enemy_shot.health == 0);
 
     patrol_map.planes[0][4 * MAP_SIDE + 3] = 107;
     patrol_map.planes[1][4 * MAP_SIDE + 3] = 24;

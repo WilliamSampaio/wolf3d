@@ -42,6 +42,12 @@ int main(void)
         memset(sprites[index].mask, 1, sizeof(sprites[index].mask));
         sprites[index].right = WALL_SIZE - 1;
     }
+    for (int index = 96; index < 99; ++index) {
+        memset(sprites[index].pixels, 20 + (index - 96) * 20,
+               sizeof(sprites[index].pixels));
+        memset(sprites[index].mask, 1, sizeof(sprites[index].mask));
+        sprites[index].right = WALL_SIZE - 1;
+    }
     VSwap vswap = {
         .walls = {1, wall},
         .sprite_count = 426,
@@ -140,6 +146,24 @@ int main(void)
     render_scene(pixels, &game, &vswap);
     assert(ready_weapon != pixels[(RENDER_HEIGHT - 1) * RENDER_WIDTH +
                                   RENDER_WIDTH / 2]);
+
+    game.current_weapon = -1;
+    game.guards[0] = (Guard){.x = 4.5, .y = 4.5, .active = 1, .shooting = 1};
+    render_scene(pixels, &game, &vswap);
+    const uint32_t shoot_one = pixels[(RENDER_HEIGHT / 2) * RENDER_WIDTH +
+                                      RENDER_WIDTH / 2];
+    game.guards[0].shoot_frame = 1;
+    render_scene(pixels, &game, &vswap);
+    assert(shoot_one != pixels[(RENDER_HEIGHT / 2) * RENDER_WIDTH +
+                               RENDER_WIDTH / 2]);
+
+    game.guards[0].active = 0;
+    game.damage_seconds = 0.0;
+    render_scene(pixels, &game, &vswap);
+    const uint32_t normal_view = pixels[0];
+    game.damage_seconds = 0.1;
+    render_scene(pixels, &game, &vswap);
+    assert(normal_view != pixels[0]);
     puts("RENDER OK");
     return 0;
 }

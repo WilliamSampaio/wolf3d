@@ -395,11 +395,32 @@ Critérios de aceitação do M5J:
 1. [x] disparo percorre deterministicamente os quatro quadros em 24 tics;
 2. [x] pistola retorna ao quadro pronto ao terminar;
 3. [x] entradas adicionais durante a animação não consomem munição;
-4. [ ] sequência é validada visualmente no primeiro mapa shareware;
+4. [x] sequência é validada visualmente no primeiro mapa shareware;
 5. [x] build, testes e smoke checks continuam passando.
 
 Recuo, balanço ao caminhar, faca, armas automáticas, áudio e clarão de tela
 permanecem fora do M5J.
+
+### M5K — contrato de ataque dos guardas
+
+- interromper a perseguição para atirar quando o jogador estiver próximo e
+  houver linha de visão;
+- exibir os três quadros originais do disparo por 20 tics cada;
+- resolver o tiro no segundo quadro com chance e dano determinísticos por distância;
+- reduzir a vida do jogador sem valores negativos e exibir um breve flash vermelho;
+- retomar a perseguição após o disparo.
+
+Critérios de aceitação do M5K:
+
+1. [x] paredes e distância impedem o início do ataque;
+2. [x] o tiro ocorre uma vez no segundo quadro e usa o RNG da simulação;
+3. [x] guardas não se movem enquanto atiram e retomam a perseguição ao terminar;
+4. [x] dano ativa feedback visual e respeita o limite de zero de vida;
+5. [ ] ataque é validado visualmente no primeiro mapa shareware;
+6. [x] build, testes e smoke checks continuam passando.
+
+HUD, morte/reinício do jogador, dificuldade, áudio, dor e coordenação entre
+guardas permanecem fora do M5K.
 
 ## Regra de documentação
 

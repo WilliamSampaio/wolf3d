@@ -40,6 +40,8 @@ static size_t guard_sprite(const Guard *guard, const Player *player)
         const int frame = (int)(guard->death_seconds * 70.0 / 15.0);
         return frame < 3 ? 91 + frame : 95;
     }
+    if (guard->shooting)
+        return 96 + guard->shoot_frame;
     const double pi = 3.14159265358979323846;
     const double facing = -guard->direction * pi / 2.0;
     double relative = facing - atan2(player->y - guard->y,
@@ -221,4 +223,13 @@ void render_scene(uint32_t pixels[RENDER_WIDTH * RENDER_HEIGHT],
         draw_sprite(pixels, &vswap->sprites[sprites[index].sprite],
                     &sprites[index], player, depth);
     draw_weapon(pixels, game, vswap);
+    if (game->damage_seconds > 0.0) {
+        for (size_t index = 0; index < RENDER_WIDTH * RENDER_HEIGHT; ++index) {
+            const uint32_t color = pixels[index];
+            const uint32_t red = ((color >> 16) & 0xffu) + 255u;
+            pixels[index] = 0xff000000u | (red / 2) << 16 |
+                            (((color >> 8) & 0xffu) / 2) << 8 |
+                            (color & 0xffu) / 2;
+        }
+    }
 }

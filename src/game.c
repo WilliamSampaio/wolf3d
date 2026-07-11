@@ -388,6 +388,36 @@ static void update_weapon(GameState *game, double seconds)
     }
 }
 
+static void guard_shoot(GameState *game, Guard *guard, double seconds)
+{
+    const double previous = guard->shoot_seconds;
+    guard->shoot_seconds += seconds;
+    const double ticks = guard->shoot_seconds * 70.0;
+    guard->shoot_frame = ticks < 20.0 ? 0 : ticks < 40.0 ? 1 : 2;
+    if (previous < 40.0 / 70.0 && guard->shoot_seconds >= 40.0 / 70.0 &&
+        guard_sees_player(game, guard)) {
+        const double dx = fabs(game->player.x - guard->x);
+        const double dy = fabs(game->player.y - guard->y);
+        const int distance = (int)ceil(dx > dy ? dx : dy);
+        int chance = 256 - distance * 16;
+        if (chance < 0)
+            chance = 0;
+        if ((int)(game_random(game) & 0xffu) < chance) {
+            const int divisor = distance < 2 ? 4 : distance < 4 ? 8 : 16;
+            const int damage = 1 + (int)(game_random(game) & 0xffu) / divisor;
+            game->health -= damage;
+            if (game->health < 0)
+                game->health = 0;
+            game->damage_seconds = 0.15;
+        }
+    }
+    if (ticks >= 60.0) {
+        guard->shooting = 0;
+        guard->shoot_frame = 0;
+        guard->shoot_seconds = 0.0;
+    }
+}
+
 static void update_guards(GameState *game, double seconds)
 {
     for (size_t index = 0; index < game->guard_count; ++index) {
@@ -398,11 +428,25 @@ static void update_guards(GameState *game, double seconds)
             guard->death_seconds += seconds;
             continue;
         }
+        if (guard->shooting) {
+            guard_shoot(game, guard, seconds);
+            continue;
+        }
 
         if (!guard->alerted && guard_sees_player(game, guard))
             guard->alerted = 1;
         if (!guard->alerted && !guard->patrol)
             continue;
+
+        const double player_x = game->player.x - guard->x;
+        const double player_y = game->player.y - guard->y;
+        if (guard->alerted && player_x * player_x + player_y * player_y <= 16.0 &&
+            guard_sees_player(game, guard)) {
+            guard->shooting = 1;
+            guard->shoot_seconds = 0.0;
+            guard->shoot_frame = 0;
+            continue;
+        }
 
         if (guard->alerted) {
             chase_player(game, guard, guard_patrol_speed * 3.0 * seconds);
@@ -500,6 +544,11 @@ void game_update(GameState *game, const PlayerCommand *command, double seconds)
     if (command->attack_pressed && !game->weapon_frame)
         player_attack(game);
     update_weapon(game, seconds);
+    if (game->damage_seconds > 0.0) {
+        game->damage_seconds -= seconds;
+        if (game->damage_seconds < 0.0)
+            game->damage_seconds = 0.0;
+    }
     update_doors(game, seconds);
     update_guards(game, seconds);
     player_update(&game->player, game->map.planes[0], game->blocked,
