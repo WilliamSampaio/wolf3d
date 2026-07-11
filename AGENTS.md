@@ -2,7 +2,11 @@
 
 ## Project Structure & Module Organization
 
-`src/` contains the new portable C implementation; `src/main.c` currently owns the SDL2 window, framebuffer, and event loop. `WOLFSRC/` is the untouched Borland C++ 3.x/DOS source release and serves as the behavioral reference. Keep platform-independent ports in `src/` and avoid modifying generated or historical files unless a porting task requires it. Root-level `WOLFSRC.*`, `DEICE.EXE`, and `INSTALL.BAT` are original distribution artifacts. CMake writes generated files to `build/`, which is ignored by Git.
+`src/` contains the new portable C implementation; `src/main.c` currently owns the SDL2 window, framebuffer, and event loop. `docs/specs/` contains the SDD contracts that govern implementation. `WOLFSRC/` is the untouched Borland C++ 3.x/DOS source release and serves as the behavioral reference. Root-level distribution artifacts and `README.rst` are historical and must remain unchanged. CMake writes generated files to the ignored `build/` directory.
+
+## Spec-Driven Workflow
+
+Read the applicable file in `docs/specs/` before changing code. Add or revise its scope, non-goals, and acceptance criteria before implementation, then make the smallest change that satisfies them. Every functional change must update the milestone/status in the governing spec and the project state in `README.md`. Review this guide in the same change and update it whenever structure, commands, conventions, or contributor workflow differ; otherwise state that it was reviewed and remains accurate.
 
 ## Build, Test, and Development Commands
 
