@@ -38,7 +38,8 @@ plataforma.
 - [x] M2 — carregar paleta e primeiro recurso gráfico.
 - [x] M3 — carregar mapa e renderizar uma cena estática.
 - [x] M4 — movimento, colisão e entrada jogável.
-- [ ] M5 — atores, interface, áudio e fluxo completo do jogo.
+- [ ] M5 — campanha shareware com atores, interface, áudio PCM e fluxo completo.
+  - [ ] M5A — fundação portátil da simulação.
 
 ## Critérios de aceitação atuais
 
@@ -182,6 +183,27 @@ Configuração de sensibilidade, movimento vertical e menus permanecem fora do M
 
 O movimento, a colisão, o teclado e o mouse relativo foram validados manualmente
 no mapa shareware.
+
+### M5A — contrato da fundação portátil da simulação
+
+- representar mapa, jogador e estado determinístico do RNG em um `GameState`;
+- representar ações por frame em um `PlayerCommand` independente de SDL2;
+- manter movimento, rotação por teclado e mouse e colisão observavelmente iguais;
+- carregar um mapa por índice, preparando a progressão sem implementá-la;
+- compilar os módulos portáveis uma única vez em uma biblioteca usada pelo jogo e testes.
+
+Critérios de aceitação do M5A:
+
+1. [x] a simulação do jogador pode ser atualizada por teste sem inicializar SDL2;
+2. [x] duas sequências com a mesma semente produzem os mesmos valores aleatórios;
+3. [x] índices de mapa ausentes ou fora do cabeçalho são rejeitados com segurança;
+4. [ ] o mapa 0 shareware continua carregando e jogável com os controles do M4;
+5. [x] build, `--check` e todos os testes anteriores continuam passando.
+
+Portas, sprites, objetos, inventário, atores, combate, HUD, áudio e progressão
+permanecem fora do M5A. O alvo posterior do M5 é a campanha `WL1`; suporte
+validado a `WL6`, música AdLib/OPL, saves e menus completos não fazem parte deste
+marco.
 
 ## Regra de documentação
 

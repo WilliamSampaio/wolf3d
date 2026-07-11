@@ -25,6 +25,9 @@ portável estiver funcional.
 - movimento e rotação independentes da taxa de quadros;
 - colisão com raio contra paredes, portas fechadas e limites do mapa;
 - controle horizontal da câmera com mouse em modo relativo;
+- estado portátil de jogo e comandos de entrada independentes de SDL2;
+- carregamento de mapas por índice e RNG determinístico para a simulação;
+- módulos portáveis reunidos na biblioteca `wolf3d_core`;
 - código histórico preservado em `WOLFSRC/`.
 
 O primeiro mapa pode ser explorado com teclado e mouse, ambos validados. Portas

@@ -131,8 +131,8 @@ static int load_plane(const uint8_t *data, size_t data_size, uint32_t start,
     return valid;
 }
 
-int map_load_first(const char *directory, const char *edition, WolfMap *map,
-                   char *error, size_t error_size)
+int map_load(const char *directory, const char *edition, size_t map_index,
+             WolfMap *map, char *error, size_t error_size)
 {
     char path[4096];
     size_t head_size, data_size;
@@ -140,18 +140,24 @@ int map_load_first(const char *directory, const char *edition, WolfMap *map,
     uint8_t *head = read_file(path, &head_size);
     snprintf(path, sizeof(path), "%s/GAMEMAPS.%s", directory, edition);
     uint8_t *data = read_file(path, &data_size);
-    if (!head || !data || head_size < 6) {
+    if (!head || !data) {
         snprintf(error, error_size, "não foi possível ler MAPHEAD/GAMEMAPS");
+        free(head);
+        free(data);
+        return 0;
+    }
+    if (head_size < 2 || map_index >= (head_size - 2) / 4) {
+        snprintf(error, error_size, "índice de mapa %zu inválido", map_index);
         free(head);
         free(data);
         return 0;
     }
 
     const uint16_t tag = get_u16(head);
-    const uint32_t header_offset = get_u32(head + 2);
+    const uint32_t header_offset = get_u32(head + 2 + map_index * 4);
     if (header_offset == UINT32_MAX || header_offset > data_size ||
         MAP_HEADER_SIZE > data_size - header_offset) {
-        snprintf(error, error_size, "cabeçalho do mapa 0 inválido");
+        snprintf(error, error_size, "cabeçalho do mapa %zu inválido", map_index);
         free(head);
         free(data);
         return 0;
@@ -167,7 +173,7 @@ int map_load_first(const char *directory, const char *edition, WolfMap *map,
                            map->planes[plane]);
 
     if (!valid) {
-        snprintf(error, error_size, "planos do mapa 0 inválidos");
+        snprintf(error, error_size, "planos do mapa %zu inválidos", map_index);
         free(head);
         free(data);
         return 0;
@@ -188,7 +194,8 @@ int map_load_first(const char *directory, const char *edition, WolfMap *map,
     free(head);
     free(data);
     if (players != 1) {
-        snprintf(error, error_size, "mapa 0 contém %d inícios de jogador", players);
+        snprintf(error, error_size, "mapa %zu contém %d inícios de jogador",
+                 map_index, players);
         return 0;
     }
     return 1;

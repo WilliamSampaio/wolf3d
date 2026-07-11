@@ -4,6 +4,10 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#ifndef TEST_DATA_DIR
+#define TEST_DATA_DIR "data/shareware-v1.4"
+#endif
+
 int main(void)
 {
     const uint8_t carmack[] = {
@@ -23,6 +27,12 @@ int main(void)
     assert(map_rlew_expand(rlew, 5, 0xabcd, cells, 5));
     assert(cells[0] == 5 && cells[1] == 9 && cells[3] == 9 && cells[4] == 7);
     assert(!map_rlew_expand(rlew, 4, 0xabcd, cells, 5));
+
+    WolfMap map;
+    char error[256];
+    assert(map_load(TEST_DATA_DIR, "WL1", 0, &map, error, sizeof(error)));
+    assert(map.player_x == 29 && map.player_y == 57);
+    assert(!map_load(TEST_DATA_DIR, "WL1", 1000, &map, error, sizeof(error)));
     puts("MAP OK");
     return 0;
 }

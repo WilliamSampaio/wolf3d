@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "data_files.h"
+#include "game.h"
 #include "game_palette.h"
 #include "map.h"
 #include "player.h"
@@ -74,8 +75,7 @@ int main(int argc, char **argv)
     const char *data_directory = NULL;
     const char *edition = NULL;
     VSwapWalls walls = {0};
-    WolfMap map;
-    Player player;
+    GameState game;
 
     for (int i = 1; i < argc; ++i) {
         if (strcmp(argv[i], "--check") == 0)
@@ -118,13 +118,14 @@ int main(int argc, char **argv)
         fclose(vswap);
         printf("%zu páginas de parede VSWAP OK\n", walls.count);
 
-        if (!map_load_first(data_directory, edition, &map, error, sizeof(error))) {
+        WolfMap map;
+        if (!map_load(data_directory, edition, 0, &map, error, sizeof(error))) {
             fprintf(stderr, "%s\n", error);
             return 1;
         }
         printf("Mapa 0 '%s' OK; jogador em %d,%d\n",
                map.name, map.player_x, map.player_y);
-        player_init(&player, &map);
+        game_init(&game, &map, 1);
     }
 
     const uint32_t flags = check_only ? SDL_INIT_TIMER : SDL_INIT_VIDEO;
@@ -186,13 +187,15 @@ int main(int argc, char **argv)
         const double seconds = (now - previous) / frequency;
         previous = now;
         const uint8_t *keys = SDL_GetKeyboardState(NULL);
-        const double forward = (keys[SDL_SCANCODE_W] || keys[SDL_SCANCODE_UP]) -
-                               (keys[SDL_SCANCODE_S] || keys[SDL_SCANCODE_DOWN]);
-        const double turn = (keys[SDL_SCANCODE_D] || keys[SDL_SCANCODE_RIGHT]) -
-                            (keys[SDL_SCANCODE_A] || keys[SDL_SCANCODE_LEFT]);
-        player_rotate(&player, mouse_x * 0.0025);
-        player_update(&player, map.planes[0], forward, turn, seconds);
-        render_scene(pixels, &map, &walls, &player);
+        const PlayerCommand command = {
+            .forward = (keys[SDL_SCANCODE_W] || keys[SDL_SCANCODE_UP]) -
+                       (keys[SDL_SCANCODE_S] || keys[SDL_SCANCODE_DOWN]),
+            .turn = (keys[SDL_SCANCODE_D] || keys[SDL_SCANCODE_RIGHT]) -
+                    (keys[SDL_SCANCODE_A] || keys[SDL_SCANCODE_LEFT]),
+            .look_radians = mouse_x * 0.0025
+        };
+        game_update(&game, &command, seconds);
+        render_scene(pixels, &game.map, &walls, &game.player);
         SDL_UpdateTexture(texture, NULL, pixels, WIDTH * (int)sizeof(*pixels));
         SDL_RenderClear(renderer);
         SDL_RenderCopy(renderer, texture, NULL, NULL);

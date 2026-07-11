@@ -18,7 +18,7 @@ int map_carmack_expand(const uint8_t *input, size_t input_size,
                        uint16_t *output, size_t output_words);
 int map_rlew_expand(const uint16_t *input, size_t input_words, uint16_t tag,
                     uint16_t *output, size_t output_words);
-int map_load_first(const char *directory, const char *edition, WolfMap *map,
-                   char *error, size_t error_size);
+int map_load(const char *directory, const char *edition, size_t map_index,
+             WolfMap *map, char *error, size_t error_size);
 
 #endif
