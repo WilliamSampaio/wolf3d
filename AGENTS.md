@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-`src/` contains the new portable C implementation; `src/main.c` currently owns the SDL2 window, framebuffer, and event loop. `docs/specs/` contains the SDD contracts that govern implementation. `WOLFSRC/` is the untouched Borland C++ 3.x/DOS source release and serves as the behavioral reference. Root-level distribution artifacts and `README.rst` are historical and must remain unchanged. CMake writes generated files to the ignored `build/` directory.
+`src/` contains portable C; `data_files.c` validates data and `vswap.c` reads textures. `tests/` contains C tests. `docs/specs/` contains SDD contracts. `data/` preserves the shareware ZIP and extracted `.WL1` files; keep its provenance and checksum current in `data/README.md`. `WOLFSRC/` is the untouched DOS reference. Root artifacts and `README.rst` are historical and must remain unchanged. CMake writes to ignored `build/`.
 
 ## Spec-Driven Workflow
 
@@ -15,8 +15,9 @@ SDL2 development headers, a C compiler, and CMake are required.
 ```sh
 cmake -S . -B build       # Configure an out-of-tree build
 cmake --build build       # Compile the Linux executable
-./build/wolf3d            # Run the SDL2 framebuffer demo; Esc exits
+./build/wolf3d --data data/shareware-v1.4 # Validate data and run
 ./build/wolf3d --check    # Run the headless SDL2 smoke check
+ctest --test-dir build --output-on-failure # Run portable logic tests
 ```
 
 Before submitting, also run `git diff --check` to catch whitespace errors. Do not commit anything under `build/`.
@@ -27,7 +28,7 @@ Write portable C supported by the repository's CMake toolchain. Use four-space i
 
 ## Testing Guidelines
 
-There is no test framework or coverage target yet. Every change must build and pass `./build/wolf3d --check`. For rendering or input changes, manually run the game and describe what was verified. Add a small focused test only when introducing non-trivial portable logic; use names such as `test_map_loader.c`.
+CTest runs focused executables such as `test_vswap`. Every change must build, pass CTest, and pass `./build/wolf3d --check`. For rendering or input changes, manually run the game and describe what was verified. Add one small test for new non-trivial portable logic; use names such as `test_map_loader.c`.
 
 ## Commit & Pull Request Guidelines
 

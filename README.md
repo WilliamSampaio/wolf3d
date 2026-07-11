@@ -14,10 +14,14 @@ portável estiver funcional.
 - janela SDL2 e framebuffer de 320×200 escalado;
 - loop de eventos com saída por `Esc`;
 - smoke check executável sem interface gráfica;
+- validação dos conjuntos de dados shareware (`WL1`) e completo (`WL6`);
+- leitor seguro de `VSWAP` e teste automatizado com arquivo sintético;
+- paleta VGA original e renderização da primeira textura de parede;
+- renderização validada com os dados shareware v1.4 incluídos em `data/`;
 - código histórico preservado em `WOLFSRC/`.
 
-O jogo original ainda não é jogável. O próximo marco é carregar e validar os
-arquivos de dados originais.
+O jogo original ainda não é jogável. O próximo marco é carregar um mapa e
+renderizar uma cena estática.
 
 ## Compilar no Linux
 
@@ -26,15 +30,27 @@ Requisitos: compilador C, CMake 3.16+ e headers de desenvolvimento do SDL2.
 ```sh
 cmake -S . -B build
 cmake --build build
-./build/wolf3d
+./build/wolf3d --data data/shareware-v1.4
 ```
 
 Verificação rápida:
 
 ```sh
 ./build/wolf3d --check
+./build/wolf3d --check --data data/shareware-v1.4
+ctest --test-dir build --output-on-failure
 git diff --check
 ```
+
+O diretório deve conter os oito arquivos originais não vazios: `VSWAP`,
+`GAMEMAPS`, `MAPHEAD`, `VGADICT`, `VGAHEAD`, `VGAGRAPH`, `AUDIOHED` e
+`AUDIOT`, todos com extensão `.WL1` ou `.WL6`.
+
+O pacote shareware v1.4 usado no desenvolvimento veio do
+[Internet Archive](https://archive.org/details/wolf3dsw). O ZIP original, sua
+origem, checksum e organização estão documentados em
+[`data/README.md`](data/README.md). Dados comerciais `.WL6` não fazem parte do
+repositório.
 
 ## Desenvolvimento orientado por especificações
 
