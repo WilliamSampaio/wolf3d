@@ -20,10 +20,12 @@ portável estiver funcional.
 - renderização validada com os dados shareware v1.4 incluídos em `data/`;
 - descompressão Carmack/RLEW e carregamento dos dois planos do primeiro mapa;
 - visão superior estática com paredes, portas e orientação do jogador;
+- carregamento das 106 páginas de parede, incluindo páginas esparsas;
+- raycasting DDA com paredes texturizadas e câmera inicial estática;
 - código histórico preservado em `WOLFSRC/`.
 
-O jogo original ainda não é jogável. A planta do primeiro mapa foi validada;
-o passo seguinte será uma cena 3D estática por raycasting.
+O jogo original ainda não é jogável. A primeira cena 3D estática foi validada;
+movimento e colisão pertencem ao próximo marco.
 
 ## Compilar no Linux
 
@@ -54,8 +56,8 @@ origem, checksum e organização estão documentados em
 [`data/README.md`](data/README.md). Dados comerciais `.WL6` não fazem parte do
 repositório.
 
-Na visão superior, cinza representa paredes, amarelo representa portas,
-vermelho marca o jogador e branco indica sua orientação inicial.
+Ao executar, a janela mostra a visão 3D do início de `Wolf1 Map1`, com teto,
+chão e paredes do `VSWAP` usando a paleta original.
 
 ## Desenvolvimento orientado por especificações
 

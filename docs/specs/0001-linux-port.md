@@ -36,7 +36,7 @@ plataforma.
 - [x] M0 — CMake, SDL2, framebuffer 320×200 e loop de eventos.
 - [x] M1 — localizar, abrir e validar arquivos de dados originais.
 - [x] M2 — carregar paleta e primeiro recurso gráfico.
-- [ ] M3 — carregar mapa e renderizar uma cena estática. *(M3A concluído)*
+- [x] M3 — carregar mapa e renderizar uma cena estática.
 - [ ] M4 — movimento, colisão e entrada jogável.
 - [ ] M5 — atores, interface, áudio e fluxo completo do jogo.
 
@@ -104,6 +104,27 @@ O conjunto shareware carregou `Wolf1 Map1`, localizou o jogador em `(29,57)` e
 a visão superior foi validada manualmente.
 
 Raycasting, movimento, colisões, atores, sprites e áudio não fazem parte do M3A.
+
+### M3B — contrato da cena 3D estática
+
+- carregar todas as páginas de parede anteriores aos sprites em `VSWAP`;
+- lançar um raio DDA por coluna a partir da posição e orientação do jogador;
+- limitar os raios ao mapa e calcular distância perpendicular, lado e coluna atingidos;
+- mapear paredes 1–63 para as texturas horizontais/verticais do jogo;
+- desenhar teto, chão e paredes texturizadas com a paleta original;
+- manter a câmera estática e encerrar somente por `Esc` ou fechamento da janela.
+
+Critérios de aceitação do M3B:
+
+1. [x] teste sintético comprova célula, lado, distância e coordenada da textura;
+2. [x] raio sem parede termina com segurança nos limites do mapa;
+3. [x] as 106 páginas de parede, incluindo páginas esparsas, são validadas;
+4. [x] a janela exibe uma cena 3D reconhecível no início de `Wolf1 Map1`;
+5. [x] build, `--check` e todos os testes anteriores continuam passando.
+
+Movimento, colisões, interação com portas, sprites, atores, HUD e áudio permanecem fora do M3B.
+
+A cena 3D estática foi validada manualmente com o conjunto shareware v1.4.
 
 ## Regra de documentação
 

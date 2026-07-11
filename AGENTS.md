@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-`src/` contains portable C; `vswap.c` reads textures and `map.c` decodes maps. `tests/` contains C tests. `docs/specs/` contains SDD contracts. `data/` preserves the shareware ZIP and `.WL1` files; keep provenance current in `data/README.md`. `WOLFSRC/` is the untouched DOS reference. Root artifacts and `README.rst` are historical and must remain unchanged. CMake writes to ignored `build/`.
+`src/` contains portable C; `vswap.c` reads textures, `map.c` decodes maps, and `raycast.c` traces walls. `tests/` contains C tests. `docs/specs/` contains SDD contracts. `data/` preserves the shareware ZIP and `.WL1` files; keep provenance current in `data/README.md`. `WOLFSRC/` is the untouched DOS reference. Root artifacts and `README.rst` are historical and must remain unchanged. CMake writes to ignored `build/`.
 
 ## Spec-Driven Workflow
 
@@ -28,7 +28,7 @@ Write portable C supported by the repository's CMake toolchain. Use four-space i
 
 ## Testing Guidelines
 
-CTest runs focused executables such as `test_vswap` and `test_map`. Every change must build, pass CTest, and pass `./build/wolf3d --check`. For rendering or input changes, manually run the game and describe what was verified. Add one small test for new non-trivial portable logic.
+CTest runs `test_vswap`, `test_map`, and `test_raycast`. Every change must build, pass CTest, and pass `./build/wolf3d --check`. For rendering or input changes, manually run the game and describe what was verified. Add one small test for new non-trivial portable logic.
 
 ## Commit & Pull Request Guidelines
 
