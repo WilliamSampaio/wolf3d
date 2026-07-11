@@ -13,6 +13,8 @@ Read the applicable file in `docs/specs/` before changing code. Add or revise it
 SDL2 development headers, a C compiler, and CMake are required.
 
 ```sh
+./scripts/bootstrap.sh --install # Install dependencies on Debian/Ubuntu
+./scripts/bootstrap.sh --check   # Verify dependencies without system changes
 cmake -S . -B build       # Configure an out-of-tree build
 cmake --build build       # Compile the Linux executable
 ./build/wolf3d --data data/shareware-v1.4 # Validate data and run

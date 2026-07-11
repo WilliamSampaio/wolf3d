@@ -34,6 +34,17 @@ ainda permanecem fechadas e não há sprites, atores, combate, HUD ou áudio.
 
 Requisitos: compilador C, CMake 3.16+ e headers de desenvolvimento do SDL2.
 
+Em Debian ou Ubuntu, instale e valide essas dependências com:
+
+```sh
+./scripts/bootstrap.sh --install
+./scripts/bootstrap.sh --check
+```
+
+O modo `--install` usa `apt-get` e solicita `sudo` quando necessário. O modo
+`--check` apenas informa dependências ausentes e não modifica o sistema. Em
+outras distribuições, instale os pacotes equivalentes pelo gerenciador local.
+
 ```sh
 cmake -S . -B build
 cmake --build build

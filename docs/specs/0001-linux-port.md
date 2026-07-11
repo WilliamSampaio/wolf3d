@@ -47,6 +47,22 @@ plataforma.
 3. `./build/wolf3d` abre o framebuffer e encerra por `Esc` ou pelo fechamento da janela.
 4. `README.rst` e os arquivos históricos em `WOLFSRC/` permanecem intactos.
 
+### Bootstrap do ambiente Linux
+
+- fornecer um script versionado para instalar a toolchain C, CMake e os headers
+  do SDL2 em distribuições Debian e Ubuntu;
+- detectar a distribuição antes de executar o gerenciador de pacotes;
+- permitir verificar as dependências sem modificar o sistema;
+- falhar com uma mensagem clara em sistemas não suportados ou quando uma
+  dependência continuar ausente.
+
+Critérios de aceitação do bootstrap:
+
+1. [x] `./scripts/bootstrap.sh --check` informa todas as dependências ausentes;
+2. [x] `./scripts/bootstrap.sh --install` usa `apt-get` somente em Debian/Ubuntu;
+3. [x] após a instalação, compilador C, CMake e SDL2 são encontrados;
+4. [x] o procedimento e os comandos seguintes estão documentados no `README.md`.
+
 ### M1 — contrato dos dados
 
 - `--data DIRETÓRIO` seleciona explicitamente a pasta dos dados;
