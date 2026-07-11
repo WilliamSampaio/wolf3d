@@ -34,22 +34,20 @@ static int compare_distance(const void *left, const void *right)
 }
 
 static size_t collect_statics(VisibleStatic statics[MAP_CELLS],
-                              const WolfMap *map, const VSwap *vswap,
-                              const Player *player)
+                              const GameState *game, const VSwap *vswap)
 {
     size_t count = 0;
-    for (size_t cell = 0; cell < MAP_CELLS; ++cell) {
-        const uint16_t object = map->planes[1][cell];
-        if (object < 23 || object > 70)
+    for (size_t index = 0; index < game->static_count; ++index) {
+        const StaticObject *object = &game->statics[index];
+        if (!object->active || object->sprite >= vswap->sprite_count)
             continue;
-        const size_t sprite = object - 21;
-        if (sprite >= vswap->sprite_count)
-            continue;
-        const double x = cell % MAP_SIDE + 0.5;
-        const double y = cell / MAP_SIDE + 0.5;
-        const double dx = x - player->x;
-        const double dy = y - player->y;
-        statics[count++] = (VisibleStatic){x, y, dx * dx + dy * dy, sprite};
+        const double x = object->x + 0.5;
+        const double y = object->y + 0.5;
+        const double dx = x - game->player.x;
+        const double dy = y - game->player.y;
+        statics[count++] = (VisibleStatic){
+            x, y, dx * dx + dy * dy, object->sprite
+        };
     }
     qsort(statics, count, sizeof(*statics), compare_distance);
     return count;
@@ -101,8 +99,10 @@ static void draw_sprite(uint32_t pixels[RENDER_WIDTH * RENDER_HEIGHT],
 }
 
 void render_scene(uint32_t pixels[RENDER_WIDTH * RENDER_HEIGHT],
-                  const WolfMap *map, const VSwap *vswap, const Player *player)
+                  const GameState *game, const VSwap *vswap)
 {
+    const WolfMap *map = &game->map;
+    const Player *player = &game->player;
     for (int y = 0; y < RENDER_HEIGHT; ++y)
         for (int x = 0; x < RENDER_WIDTH; ++x)
             pixels[y * RENDER_WIDTH + x] =
@@ -119,12 +119,21 @@ void render_scene(uint32_t pixels[RENDER_WIDTH * RENDER_HEIGHT],
         const double ray_x = direction_x + plane_x * camera_x;
         const double ray_y = direction_y + plane_y * camera_x;
         RayHit hit;
-        if (!raycast_hit(map->planes[0], player->x, player->y, ray_x, ray_y, &hit))
+        if (!raycast_hit(map->planes[0], game->door_at, game->doors,
+                         player->x, player->y, ray_x, ray_y, &hit))
             continue;
         depth[x] = hit.distance;
 
         size_t page = 0;
-        if (hit.tile < 64)
+        if (hit.kind == RAY_HIT_DOOR && vswap->walls.count >= 8) {
+            const Door *door = &game->doors[hit.door_index];
+            size_t base = vswap->walls.count - 8;
+            if (door->kind == DOOR_ELEVATOR)
+                base += 4;
+            else if (door->kind != DOOR_NORMAL)
+                base += 6;
+            page = base + (door->vertical != 0);
+        } else if (hit.tile < 64)
             page = (hit.tile - 1) * 2 + (hit.side == 0);
         else if (hit.tile >= 90 && hit.tile <= 101 && vswap->walls.count >= 8)
             page = vswap->walls.count - 8 + (hit.side == 0);
@@ -149,7 +158,7 @@ void render_scene(uint32_t pixels[RENDER_WIDTH * RENDER_HEIGHT],
     }
 
     VisibleStatic statics[MAP_CELLS];
-    const size_t count = collect_statics(statics, map, vswap, player);
+    const size_t count = collect_statics(statics, game, vswap);
     for (size_t index = 0; index < count; ++index)
         draw_sprite(pixels, &vswap->sprites[statics[index].sprite],
                     &statics[index], player, depth);

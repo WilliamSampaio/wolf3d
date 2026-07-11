@@ -124,9 +124,13 @@ int main(int argc, char **argv)
     for (int running = 1; running;) {
         SDL_Event event;
         int mouse_x = 0;
+        int use_pressed = 0;
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_MOUSEMOTION)
                 mouse_x += event.motion.xrel;
+            if (event.type == SDL_KEYDOWN && !event.key.repeat &&
+                event.key.keysym.sym == SDLK_SPACE)
+                use_pressed = 1;
             if (event.type == SDL_QUIT ||
                 (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE))
                 running = 0;
@@ -141,10 +145,11 @@ int main(int argc, char **argv)
                        (keys[SDL_SCANCODE_S] || keys[SDL_SCANCODE_DOWN]),
             .turn = (keys[SDL_SCANCODE_D] || keys[SDL_SCANCODE_RIGHT]) -
                     (keys[SDL_SCANCODE_A] || keys[SDL_SCANCODE_LEFT]),
-            .look_radians = mouse_x * 0.0025
+            .look_radians = mouse_x * 0.0025,
+            .use_pressed = use_pressed
         };
         game_update(&game, &command, seconds);
-        render_scene(pixels, &game.map, &vswap, &game.player);
+        render_scene(pixels, &game, &vswap);
         SDL_UpdateTexture(texture, NULL, pixels,
                           RENDER_WIDTH * (int)sizeof(*pixels));
         SDL_RenderClear(renderer);

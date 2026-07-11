@@ -5,7 +5,7 @@ find_package(SDL2 REQUIRED)
 
 add_library(wolf3d_core
     src/data_files.c src/vswap.c src/map.c src/raycast.c src/player.c src/game.c
-    src/render.c)
+    src/render.c src/door.c)
 target_include_directories(wolf3d_core PUBLIC src)
 target_link_libraries(wolf3d_core PUBLIC m)
 target_compile_options(wolf3d_core PRIVATE -Wall -Wextra -Wpedantic)

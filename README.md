@@ -30,11 +30,15 @@ portável estiver funcional.
 - módulos portáveis reunidos na biblioteca `wolf3d_core`;
 - catálogo completo do `VSWAP` e decodificação segura de sprites compilados;
 - objetos estáticos renderizados com transparência e oclusão por paredes;
+- objetos sólidos participam da colisão e pickups atualizam o estado do jogador;
+- vida, munição, armas, chaves, vidas, score e tesouros mantidos na simulação;
+- portas móveis com abertura parcial, fechaduras, colisão e fechamento automático;
 - código histórico preservado em `WOLFSRC/`.
 
-O primeiro mapa pode ser explorado com teclado e mouse, ambos validados. Portas
-ainda permanecem fechadas e não há atores, combate, HUD ou áudio. Os sprites
-estáticos são visíveis, mas ainda não bloqueiam movimento nem podem ser coletados.
+O primeiro mapa pode ser explorado com teclado e mouse. Portas abrem com `Space`,
+fecham automaticamente e respeitam as chaves coletadas. Ainda não há atores,
+combate, HUD ou áudio. Objetos sólidos bloqueiam movimento; itens aplicáveis são
+coletados e desaparecem do cenário.
 
 ## Compilar no Linux
 
@@ -58,7 +62,7 @@ cmake --build build
 ```
 
 Controles: `W`/`↑` avança, `S`/`↓` recua, `A`/`←` e `D`/`→` giram, o mouse
-controla a direção horizontal e `Esc` encerra.
+controla a direção horizontal, `Space` opera a porta à frente e `Esc` encerra.
 
 Verificação rápida:
 

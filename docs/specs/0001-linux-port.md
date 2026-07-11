@@ -40,7 +40,9 @@ plataforma.
 - [x] M4 — movimento, colisão e entrada jogável.
 - [ ] M5 — campanha shareware com atores, interface, áudio PCM e fluxo completo.
   - [x] M5A — fundação portátil da simulação.
-  - [ ] M5B — catálogo VSWAP e sprites estáticos.
+  - [x] M5B — catálogo VSWAP e sprites estáticos.
+  - [ ] M5C — objetos estáticos, bloqueios e pickups.
+  - [ ] M5D — portas móveis e interação.
 
 ## Critérios de aceitação atuais
 
@@ -221,11 +223,57 @@ Critérios de aceitação do M5B:
 2. [x] páginas truncadas e comandos fora dos limites são rejeitados;
 3. [x] todas as páginas de sprite do conjunto shareware são decodificadas;
 4. [x] sprites atrás de paredes são ocultados pelo depth buffer;
-5. [ ] objetos estáticos do primeiro mapa são validados visualmente;
+5. [x] objetos estáticos do primeiro mapa são validados visualmente;
 6. [x] build, `--check` e todos os testes anteriores continuam passando.
 
 Coleta, bloqueio por objetos, portas móveis, atores e animações permanecem fora
 do M5B.
+
+### M5C — contrato de objetos estáticos, bloqueios e pickups
+
+- instanciar códigos 23–70 do plano de objetos como estado explícito do nível;
+- preservar o sprite e classificar decoração, bloqueio e item coletável;
+- impedir que o jogador atravesse objetos marcados como bloqueantes;
+- coletar itens ao entrar em sua célula e removê-los da simulação e renderização;
+- manter vida, munição, armas, chaves, vidas, pontuação e tesouros no estado;
+- respeitar limites e condições do original, incluindo itens não consumidos
+  quando vida ou munição já estiverem no máximo.
+
+Critérios de aceitação do M5C:
+
+1. [x] os 48 tipos estáticos WL1 são classificados e instanciados;
+2. [x] objetos bloqueantes impedem movimento e decorações não impedem;
+3. [x] comida, kit médico, munição, armas, chaves e tesouros aplicam seus efeitos;
+4. [x] itens inaplicáveis permanecem no mapa e valores respeitam seus limites;
+5. [x] itens coletados deixam de ser renderizados;
+6. [ ] comportamento é validado manualmente no primeiro mapa;
+7. [x] build, `--check` e todos os testes anteriores continuam passando.
+
+HUD, sons de coleta, portas, atores e combate permanecem fora do M5C.
+
+### M5D — contrato de portas móveis e interação
+
+- instanciar tiles 90–101 com orientação, fechadura e estado explícitos;
+- operar com `Space` a porta na célula atual ou cardinal adjacente, por borda de pressão;
+- exigir as chaves correspondentes sem consumi-las;
+- abrir e fechar progressivamente, aguardar aberta e fechar automaticamente;
+- usar a mesma abertura parcial no raycasting e na colisão do jogador;
+- testar o plano da porta mesmo quando a câmera já estiver dentro da célula;
+- impedir fechamento sobre o jogador e reabrir quando houver obstrução;
+- selecionar texturas normais, trancadas e de elevador por orientação.
+
+Critérios de aceitação do M5D:
+
+1. [x] testes cobrem tiles 90–101, orientação, tipo e estado inicial;
+2. [x] interação adjacente, inversão e fechaduras são determinísticas;
+3. [x] abertura, espera, fechamento e obstrução respeitam o tempo do original;
+4. [x] raycast atravessa a fração aberta e atinge a fração sólida;
+5. [x] colisão permite passagem somente quando houver espaço para o jogador;
+6. [x] build, testes e smoke checks continuam passando;
+7. [ ] portas, bloqueios e pickups são validados manualmente no mapa shareware.
+
+Sons, atores, conectividade de áreas, pushwalls e conclusão por elevador
+permanecem fora do M5D.
 
 ## Regra de documentação
 
