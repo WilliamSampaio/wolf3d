@@ -4,7 +4,7 @@
 #include <string.h>
 
 #include "data_files.h"
-#include "game_palette.h"
+#include "map.h"
 #include "vswap.h"
 
 enum { WIDTH = 320, HEIGHT = 200, SCALE = 3 };
@@ -15,6 +15,7 @@ int main(int argc, char **argv)
     const char *data_directory = NULL;
     const char *edition = NULL;
     uint8_t wall[WALL_PIXELS];
+    WolfMap map;
 
     for (int i = 1; i < argc; ++i) {
         if (strcmp(argv[i], "--check") == 0)
@@ -55,6 +56,13 @@ int main(int argc, char **argv)
             return 1;
         }
         fclose(vswap);
+
+        if (!map_load_first(data_directory, edition, &map, error, sizeof(error))) {
+            fprintf(stderr, "%s\n", error);
+            return 1;
+        }
+        printf("Mapa 0 '%s' OK; jogador em %d,%d\n",
+               map.name, map.player_x, map.player_y);
     }
 
     const uint32_t flags = check_only ? SDL_INIT_TIMER : SDL_INIT_VIDEO;
@@ -88,15 +96,32 @@ int main(int argc, char **argv)
     }
 
     uint32_t pixels[WIDTH * HEIGHT];
-    for (int y = 0; y < HEIGHT; ++y) {
-        for (int x = 0; x < WIDTH; ++x) {
-            const uint8_t color = wall[(y % WALL_SIZE) * WALL_SIZE + x % WALL_SIZE];
-            const uint8_t *rgb = &game_palette[color * 3];
-            pixels[y * WIDTH + x] = 0xff000000u | (uint32_t)(rgb[0] * 255 / 63) << 16
-                                  | (uint32_t)(rgb[1] * 255 / 63) << 8
-                                  | (uint32_t)(rgb[2] * 255 / 63);
+    for (int i = 0; i < WIDTH * HEIGHT; ++i)
+        pixels[i] = 0xff101018u;
+
+    enum { MAP_SCALE = 3, MAP_X = (WIDTH - MAP_SIDE * MAP_SCALE) / 2,
+           MAP_Y = (HEIGHT - MAP_SIDE * MAP_SCALE) / 2 };
+    for (int y = 0; y < MAP_SIDE; ++y) {
+        for (int x = 0; x < MAP_SIDE; ++x) {
+            const uint16_t tile = map.planes[0][y * MAP_SIDE + x];
+            uint32_t color = 0xff202028u;
+            if (tile >= 90 && tile <= 101)
+                color = 0xffffc020u;
+            else if (tile && tile < 107)
+                color = 0xffa0a0a8u;
+            for (int py = 0; py < MAP_SCALE; ++py)
+                for (int px = 0; px < MAP_SCALE; ++px)
+                    pixels[(MAP_Y + y * MAP_SCALE + py) * WIDTH +
+                           MAP_X + x * MAP_SCALE + px] = color;
         }
     }
+
+    const int directions[4][2] = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
+    const int player_x = MAP_X + map.player_x * MAP_SCALE + 1;
+    const int player_y = MAP_Y + map.player_y * MAP_SCALE + 1;
+    pixels[player_y * WIDTH + player_x] = 0xffff2020u;
+    pixels[(player_y + directions[map.player_direction][1] * 2) * WIDTH +
+           player_x + directions[map.player_direction][0] * 2] = 0xffffffffu;
 
     for (int running = 1; running;) {
         SDL_Event event;

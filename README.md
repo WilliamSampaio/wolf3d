@@ -18,10 +18,12 @@ portável estiver funcional.
 - leitor seguro de `VSWAP` e teste automatizado com arquivo sintético;
 - paleta VGA original e renderização da primeira textura de parede;
 - renderização validada com os dados shareware v1.4 incluídos em `data/`;
+- descompressão Carmack/RLEW e carregamento dos dois planos do primeiro mapa;
+- visão superior estática com paredes, portas e orientação do jogador;
 - código histórico preservado em `WOLFSRC/`.
 
-O jogo original ainda não é jogável. O próximo marco é carregar um mapa e
-renderizar uma cena estática.
+O jogo original ainda não é jogável. A planta do primeiro mapa foi validada;
+o passo seguinte será uma cena 3D estática por raycasting.
 
 ## Compilar no Linux
 
@@ -51,6 +53,9 @@ O pacote shareware v1.4 usado no desenvolvimento veio do
 origem, checksum e organização estão documentados em
 [`data/README.md`](data/README.md). Dados comerciais `.WL6` não fazem parte do
 repositório.
+
+Na visão superior, cinza representa paredes, amarelo representa portas,
+vermelho marca o jogador e branco indica sua orientação inicial.
 
 ## Desenvolvimento orientado por especificações
 

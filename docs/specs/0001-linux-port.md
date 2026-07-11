@@ -36,7 +36,7 @@ plataforma.
 - [x] M0 — CMake, SDL2, framebuffer 320×200 e loop de eventos.
 - [x] M1 — localizar, abrir e validar arquivos de dados originais.
 - [x] M2 — carregar paleta e primeiro recurso gráfico.
-- [ ] M3 — carregar mapa e renderizar uma cena estática.
+- [ ] M3 — carregar mapa e renderizar uma cena estática. *(M3A concluído)*
 - [ ] M4 — movimento, colisão e entrada jogável.
 - [ ] M5 — atores, interface, áudio e fluxo completo do jogo.
 
@@ -82,6 +82,28 @@ Validação visual registrada com `data/shareware-v1.4`, obtido do item
 [`wolf3dsw`](https://archive.org/details/wolf3dsw) do Internet Archive. O pacote
 original é preservado em `data/wolf3dsw.zip` com SHA-256
 `76ee5e73e7d6341aefff620989bb5f828e9d295982afd5415b62dee7fe54eb64`.
+
+### M3A — contrato da visão superior
+
+- ler a tag RLEW e o offset do mapa 0 em `MAPHEAD`;
+- ler o cabeçalho e os dois planos 64×64 correspondentes em `GAMEMAPS`;
+- descomprimir cada plano com Carmack Expand seguido de RLEW Expand;
+- rejeitar entradas truncadas, referências inválidas e saídas fora dos limites;
+- localizar o único início do jogador pelos códigos 19–22 do plano de objetos;
+- mostrar paredes, portas e jogador numa visão superior estática.
+
+Critérios de aceitação do M3A:
+
+1. [x] testes sintéticos cobrem literais e referências Carmack, sequências RLEW e erros;
+2. [x] os dois planos reais do mapa 0 resultam em exatamente 64×64 células;
+3. [x] o mapa real contém exatamente um início de jogador válido;
+4. [x] a janela exibe uma planta reconhecível do primeiro nível e sua orientação;
+5. [x] testes de `VSWAP`, build e `--check` continuam passando.
+
+O conjunto shareware carregou `Wolf1 Map1`, localizou o jogador em `(29,57)` e
+a visão superior foi validada manualmente.
+
+Raycasting, movimento, colisões, atores, sprites e áudio não fazem parte do M3A.
 
 ## Regra de documentação
 
