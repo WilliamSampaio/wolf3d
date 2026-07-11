@@ -33,13 +33,14 @@ portável estiver funcional.
 - objetos sólidos participam da colisão e pickups atualizam o estado do jogador;
 - vida, munição, armas, chaves, vidas, score e tesouros mantidos na simulação;
 - portas móveis com abertura parcial, fechaduras, colisão e fechamento automático;
-- guardas comuns carregados do mapa e renderizados com oito orientações;
+- guardas comuns carregados, orientados e animados em patrulhas cardinais;
 - código histórico preservado em `WOLFSRC/`.
 
 O primeiro mapa pode ser explorado com teclado e mouse. Portas abrem com `Space`,
-fecham automaticamente e respeitam as chaves coletadas. Guardas são exibidos,
-mas ainda não se movem nem combatem; também não há HUD ou áudio. Objetos sólidos
-bloqueiam movimento; itens aplicáveis são coletados e desaparecem do cenário.
+fecham automaticamente e respeitam as chaves coletadas. Guardas de patrulha se
+movem pelos caminhos, mas ainda não percebem nem combatem o jogador; também não
+há HUD ou áudio. Objetos sólidos bloqueiam movimento; itens aplicáveis são
+coletados e desaparecem do cenário.
 
 ## Compilar no Linux
 

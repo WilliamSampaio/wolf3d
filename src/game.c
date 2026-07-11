@@ -6,6 +6,7 @@
 static const double door_travel_seconds = 65535.0 / (1024.0 * 70.0);
 static const double door_hold_seconds = 300.0 / 70.0;
 static const double player_radius = 0.2;
+static const double guard_patrol_speed = 512.0 * 70.0 / 65536.0;
 
 static const StaticKind static_kinds[48] = {
     STATIC_DECORATION, STATIC_BLOCKING, STATIC_BLOCKING, STATIC_BLOCKING,
@@ -199,6 +200,52 @@ static void update_doors(GameState *game, double seconds)
     }
 }
 
+static int guard_cell_open(const GameState *game, int x, int y)
+{
+    if (x < 0 || x >= MAP_SIDE || y < 0 || y >= MAP_SIDE)
+        return 0;
+    const size_t cell = (size_t)y * MAP_SIDE + x;
+    if (game->blocked[cell])
+        return 0;
+    const int door = game->door_at[cell];
+    if (door >= 0)
+        return game->doors[door].action == DOOR_OPEN;
+    const uint16_t tile = game->map.planes[0][cell];
+    return !tile || tile >= 107;
+}
+
+static void update_guards(GameState *game, double seconds)
+{
+    static const int direction_x[4] = {1, 0, -1, 0};
+    static const int direction_y[4] = {0, -1, 0, 1};
+    for (size_t index = 0; index < game->guard_count; ++index) {
+        Guard *guard = &game->guards[index];
+        if (!guard->active || !guard->patrol)
+            continue;
+
+        const size_t cell = (size_t)guard->y * MAP_SIDE + (size_t)guard->x;
+        const uint16_t arrow = game->map.planes[1][cell];
+        /* ponytail: cardinal paths suffice until diagonal actor movement exists. */
+        if (arrow >= 90 && arrow <= 96 && !(arrow & 1u))
+            guard->direction = (arrow - 90) / 2;
+
+        const double next_x = guard->x +
+                              direction_x[guard->direction] * guard_patrol_speed * seconds;
+        const double next_y = guard->y +
+                              direction_y[guard->direction] * guard_patrol_speed * seconds;
+        if (guard_cell_open(game, (int)next_x, (int)next_y)) {
+            guard->x = next_x;
+            guard->y = next_y;
+        }
+
+        guard->animation_seconds = fmod(guard->animation_seconds + seconds,
+                                        80.0 / 70.0);
+        const double ticks = guard->animation_seconds * 70.0;
+        guard->frame = ticks < 25.0 ? 0 : ticks < 40.0 ? 1 :
+                       ticks < 65.0 ? 2 : 3;
+    }
+}
+
 void game_init(GameState *game, const WolfMap *map, uint32_t random_seed)
 {
     memset(game, 0, sizeof(*game));
@@ -263,6 +310,7 @@ void game_update(GameState *game, const PlayerCommand *command, double seconds)
     if (command->use_pressed)
         use_adjacent_door(game);
     update_doors(game, seconds);
+    update_guards(game, seconds);
     player_update(&game->player, game->map.planes[0], game->blocked,
                   game->door_at, game->doors, command->forward,
                   command->turn, seconds);

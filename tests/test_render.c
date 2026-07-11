@@ -23,7 +23,7 @@ int main(void)
     make_map(&map);
     uint8_t wall[WALL_PIXELS];
     memset(wall, 10, sizeof(wall));
-    VSwapSprite sprites[58] = {0};
+    VSwapSprite sprites[90] = {0};
     memset(sprites[2].pixels, 20, sizeof(sprites[2].pixels));
     memset(sprites[2].mask, 1, sizeof(sprites[2].mask));
     sprites[2].right = WALL_SIZE - 1;
@@ -32,9 +32,14 @@ int main(void)
         memset(sprites[index].mask, 1, sizeof(sprites[index].mask));
         sprites[index].right = WALL_SIZE - 1;
     }
+    for (int index = 58; index < 90; ++index) {
+        memset(sprites[index].pixels, index, sizeof(sprites[index].pixels));
+        memset(sprites[index].mask, 1, sizeof(sprites[index].mask));
+        sprites[index].right = WALL_SIZE - 1;
+    }
     VSwap vswap = {
         .walls = {1, wall},
-        .sprite_count = 58,
+        .sprite_count = 90,
         .sprites = sprites
     };
     GameState game = {0};
@@ -62,7 +67,7 @@ int main(void)
     assert(removed != visible);
 
     game.guard_count = 1;
-    game.guards[0] = (Guard){4.5, 2.5, 0, 0, 1};
+    game.guards[0] = (Guard){.x = 4.5, .y = 2.5, .active = 1};
     render_scene(pixels, &game, &vswap);
     const uint32_t guard_east = pixels[(RENDER_HEIGHT / 2) * RENDER_WIDTH +
                                        RENDER_WIDTH / 2];
@@ -76,6 +81,30 @@ int main(void)
     const uint32_t guard_hidden = pixels[(RENDER_HEIGHT / 2) * RENDER_WIDTH +
                                          RENDER_WIDTH / 2];
     assert(guard_hidden != guard_north);
+    game.map.planes[0][2 * MAP_SIDE + 3] = 107;
+    game.guards[0].patrol = 1;
+    game.guards[0].frame = 0;
+    render_scene(pixels, &game, &vswap);
+    const uint32_t walk_one = pixels[(RENDER_HEIGHT / 2) * RENDER_WIDTH +
+                                     RENDER_WIDTH / 2];
+    game.guards[0].frame = 1;
+    render_scene(pixels, &game, &vswap);
+    const uint32_t walk_two = pixels[(RENDER_HEIGHT / 2) * RENDER_WIDTH +
+                                     RENDER_WIDTH / 2];
+    assert(walk_one != walk_two);
+
+    for (int index = 50; index < 58; ++index)
+        memset(sprites[index].mask, 0, sizeof(sprites[index].mask));
+    memset(sprites[56].mask, 1, sizeof(sprites[56].mask));
+    game.player = (Player){4.5, 6.5, -1.5707963267948966};
+    game.guards[0] = (Guard){.x = 4.5, .y = 4.5, .active = 1};
+    render_scene(pixels, &game, &vswap);
+    const uint32_t south_view = pixels[(RENDER_HEIGHT / 2) * RENDER_WIDTH +
+                                       RENDER_WIDTH / 2];
+    game.guards[0].active = 0;
+    render_scene(pixels, &game, &vswap);
+    assert(south_view != pixels[(RENDER_HEIGHT / 2) * RENDER_WIDTH +
+                                RENDER_WIDTH / 2]);
     puts("RENDER OK");
     return 0;
 }

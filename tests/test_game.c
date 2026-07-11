@@ -91,6 +91,40 @@ int main(void)
         assert(blocked.guards[type].active);
     }
 
+    WolfMap patrol_map = open_map();
+    patrol_map.planes[1][4 * MAP_SIDE + 2] = 112;
+    GameState patrol;
+    game_init(&patrol, &patrol_map, 1);
+    for (int step = 0; step < 20; ++step)
+        game_update(&patrol, &(PlayerCommand){0}, 0.05);
+    assert(fabs(patrol.guards[0].x - (2.5 + 0.546875)) < 0.000001);
+    assert(patrol.guards[0].frame == 3);
+
+    game_init(&patrol, &patrol_map, 1);
+    patrol.map.planes[1][4 * MAP_SIDE + 2] = 92;
+    game_update(&patrol, &(PlayerCommand){0}, 0.05);
+    assert(patrol.guards[0].direction == 1 && patrol.guards[0].y < 4.5);
+
+    patrol_map.planes[0][4 * MAP_SIDE + 3] = 1;
+    game_init(&patrol, &patrol_map, 1);
+    for (int step = 0; step < 40; ++step)
+        game_update(&patrol, &(PlayerCommand){0}, 0.05);
+    assert(patrol.guards[0].x < 3.0);
+
+    patrol_map.planes[0][4 * MAP_SIDE + 3] = 107;
+    patrol_map.planes[1][4 * MAP_SIDE + 3] = 24;
+    game_init(&patrol, &patrol_map, 1);
+    for (int step = 0; step < 40; ++step)
+        game_update(&patrol, &(PlayerCommand){0}, 0.05);
+    assert(patrol.guards[0].x < 3.0);
+
+    patrol_map.planes[1][4 * MAP_SIDE + 3] = 0;
+    patrol_map.planes[0][4 * MAP_SIDE + 3] = 90;
+    game_init(&patrol, &patrol_map, 1);
+    for (int step = 0; step < 40; ++step)
+        game_update(&patrol, &(PlayerCommand){0}, 0.05);
+    assert(patrol.guards[0].x < 3.0);
+
     GameState pickup = game_with_object(47);
     pickup.health = 90;
     update_once(&pickup);

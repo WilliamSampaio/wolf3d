@@ -35,14 +35,17 @@ static int compare_distance(const void *left, const void *right)
 
 static size_t guard_sprite(const Guard *guard, const Player *player)
 {
+    static const size_t walking_sprite[4] = {58, 66, 74, 82};
     const double pi = 3.14159265358979323846;
     const double facing = -guard->direction * pi / 2.0;
-    double relative = atan2(player->y - guard->y, player->x - guard->x) - facing;
+    double relative = facing - atan2(player->y - guard->y,
+                                     player->x - guard->x);
     while (relative < 0.0)
         relative += 2.0 * pi;
     while (relative >= 2.0 * pi)
         relative -= 2.0 * pi;
-    return 50 + ((int)(relative / (pi / 4.0) + 0.5) & 7);
+    const size_t base = guard->patrol ? walking_sprite[guard->frame] : 50;
+    return base + ((int)(relative / (pi / 4.0) + 0.5) & 7);
 }
 
 static size_t collect_sprites(VisibleSprite sprites[MAP_CELLS * 2],

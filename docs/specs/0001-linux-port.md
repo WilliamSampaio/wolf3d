@@ -290,12 +290,33 @@ Critérios de aceitação do M5E:
 1. [x] testes sintéticos cobrem os oito códigos, direções e origem do guarda;
 2. [x] guardas são ocultados por paredes como os demais sprites;
 3. [x] mudar a direção do guarda seleciona outra rotação visível;
-4. [ ] guardas do primeiro mapa shareware são validados visualmente;
+4. [x] guardas do primeiro mapa shareware são validados visualmente;
 5. [x] build, testes e smoke checks continuam passando.
 
 Movimento, animação, percepção, perseguição, ataques, dano, mortes, outras
 classes de atores, HUD e áudio permanecem fora do M5E. Um estado direto para o
 único ator suportado evita antecipar uma máquina de estados genérica.
+
+### M5F — contrato de patrulha dos guardas
+
+- mover guardas de patrulha nas quatro direções cardinais na velocidade original;
+- mudar a direção em células com setas cardinais do plano de objetos;
+- interromper o movimento diante de paredes, objetos bloqueantes e portas que
+  ainda não estejam totalmente abertas;
+- animar os quatro quadros de caminhada nos tempos do original;
+- manter guardas inicialmente parados sem movimento ou animação.
+
+Critérios de aceitação do M5F:
+
+1. [x] patrulha avança de forma determinística a 0,546875 célula por segundo;
+2. [x] setas cardinais alteram a direção e obstáculos interrompem o movimento;
+3. [x] os quatro quadros de caminhada seguem o ciclo original de 80 tics;
+4. [ ] patrulhas são validadas visualmente no primeiro mapa shareware;
+5. [x] build, testes e smoke checks continuam passando.
+6. [x] rotações laterais correspondem à direção cardinal do movimento.
+
+Setas diagonais, abertura de portas por atores, colisão entre atores, percepção,
+perseguição e combate permanecem fora do M5F.
 
 ## Regra de documentação
 
