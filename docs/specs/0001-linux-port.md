@@ -376,12 +376,30 @@ Critérios de aceitação do M5I:
 2. [x] mira, distância e paredes selecionam somente um alvo válido;
 3. [x] dano e morte são reproduzíveis com a mesma semente;
 4. [x] guardas mortos param de perseguir e deixam um cadáver renderizado;
-5. [ ] tiro e morte são validados no primeiro mapa shareware;
+5. [x] tiro e morte são validados no primeiro mapa shareware;
 6. [x] build, testes e smoke checks continuam passando.
 7. [x] a pistola inicial é renderizada sobre a visão do cenário.
 
 Faca, armas automáticas, animação de disparo da arma, dor, drops, ataques
 inimigos, morte do jogador, HUD, áudio e alertas por som permanecem fora do M5I.
+
+### M5J — contrato da animação de disparo da pistola
+
+- percorrer os quatro sprites originais da pistola durante um disparo;
+- manter cada quadro por seis tics e retornar ao sprite pronto;
+- impedir um novo disparo enquanto a sequência atual estiver em andamento;
+- não iniciar animação quando não houver munição.
+
+Critérios de aceitação do M5J:
+
+1. [x] disparo percorre deterministicamente os quatro quadros em 24 tics;
+2. [x] pistola retorna ao quadro pronto ao terminar;
+3. [x] entradas adicionais durante a animação não consomem munição;
+4. [ ] sequência é validada visualmente no primeiro mapa shareware;
+5. [x] build, testes e smoke checks continuam passando.
+
+Recuo, balanço ao caminhar, faca, armas automáticas, áudio e clarão de tela
+permanecem fora do M5J.
 
 ## Regra de documentação
 

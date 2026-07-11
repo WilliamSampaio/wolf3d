@@ -214,6 +214,12 @@ int main(void)
     game_update(&shot_b, &attack, 0.0);
     assert(shot_a.ammo == 7 && shot_a.guards[0].health < 100);
     assert(shot_a.guards[0].health == shot_b.guards[0].health);
+    assert(shot_a.weapon_frame == 1);
+    game_update(&shot_a, &attack, 0.0);
+    assert(shot_a.ammo == 7);
+    for (int step = 0; step < 7; ++step)
+        game_update(&shot_a, &(PlayerCommand){0}, 0.05);
+    assert(shot_a.weapon_frame == 0);
     shot_a.ammo = 0;
     const int health_before_empty = shot_a.guards[0].health;
     game_update(&shot_a, &attack, 0.0);

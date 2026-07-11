@@ -136,7 +136,7 @@ static void draw_weapon(uint32_t pixels[RENDER_WIDTH * RENDER_HEIGHT],
     if (game->current_weapon < WEAPON_KNIFE ||
         game->current_weapon > WEAPON_CHAIN_GUN)
         return;
-    const size_t index = ready_sprite[game->current_weapon];
+    const size_t index = ready_sprite[game->current_weapon] + game->weapon_frame;
     if (index >= vswap->sprite_count)
         return;
     const VSwapSprite *sprite = &vswap->sprites[index];

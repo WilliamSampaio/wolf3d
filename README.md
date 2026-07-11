@@ -35,7 +35,7 @@ portável estiver funcional.
 - portas móveis com abertura parcial, fechaduras, colisão e fechamento automático;
 - guardas comuns patrulham por células, perseguem e atravessam portas normais;
 - disparos atingem guardas, consomem munição e deixam cadáveres;
-- pistola inicial exibida em primeira pessoa;
+- pistola inicial exibida em primeira pessoa com animação de disparo;
 - código histórico preservado em `WOLFSRC/`.
 
 O primeiro mapa pode ser explorado com teclado e mouse. Portas abrem com `Space`,

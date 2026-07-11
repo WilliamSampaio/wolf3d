@@ -82,6 +82,8 @@ typedef struct {
     unsigned int keys;
     unsigned int weapons;
     int current_weapon;
+    uint8_t weapon_frame;
+    double weapon_seconds;
     int treasure_count;
     int treasure_total;
     Door doors[MAP_CELLS];

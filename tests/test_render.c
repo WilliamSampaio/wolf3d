@@ -23,7 +23,7 @@ int main(void)
     make_map(&map);
     uint8_t wall[WALL_PIXELS];
     memset(wall, 10, sizeof(wall));
-    VSwapSprite sprites[422] = {0};
+    VSwapSprite sprites[426] = {0};
     memset(sprites[2].pixels, 20, sizeof(sprites[2].pixels));
     memset(sprites[2].mask, 1, sizeof(sprites[2].mask));
     sprites[2].right = WALL_SIZE - 1;
@@ -44,7 +44,7 @@ int main(void)
     }
     VSwap vswap = {
         .walls = {1, wall},
-        .sprite_count = 422,
+        .sprite_count = 426,
         .sprites = sprites
     };
     GameState game = {0};
@@ -130,8 +130,16 @@ int main(void)
     memset(sprites[421].mask, 1, sizeof(sprites[421].mask));
     sprites[421].right = WALL_SIZE - 1;
     render_scene(pixels, &game, &vswap);
-    assert(no_weapon != pixels[(RENDER_HEIGHT - 1) * RENDER_WIDTH +
-                               RENDER_WIDTH / 2]);
+    const uint32_t ready_weapon = pixels[(RENDER_HEIGHT - 1) * RENDER_WIDTH +
+                                         RENDER_WIDTH / 2];
+    assert(no_weapon != ready_weapon);
+    memset(sprites[422].pixels, 121, sizeof(sprites[422].pixels));
+    memset(sprites[422].mask, 1, sizeof(sprites[422].mask));
+    sprites[422].right = WALL_SIZE - 1;
+    game.weapon_frame = 1;
+    render_scene(pixels, &game, &vswap);
+    assert(ready_weapon != pixels[(RENDER_HEIGHT - 1) * RENDER_WIDTH +
+                                  RENDER_WIDTH / 2]);
     puts("RENDER OK");
     return 0;
 }

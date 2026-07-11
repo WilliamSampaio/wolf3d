@@ -330,6 +330,8 @@ static void player_attack(GameState *game)
     if (game->current_weapon == WEAPON_KNIFE || game->ammo <= 0)
         return;
     --game->ammo;
+    game->weapon_frame = 1;
+    game->weapon_seconds = 0.0;
 
     const double direction_x = cos(game->player.angle);
     const double direction_y = sin(game->player.angle);
@@ -369,6 +371,20 @@ static void player_attack(GameState *game)
         target->dead = 1;
         target->death_seconds = 0.0;
         game->score += 100;
+    }
+}
+
+static void update_weapon(GameState *game, double seconds)
+{
+    if (!game->weapon_frame)
+        return;
+    game->weapon_seconds += seconds;
+    const int frame = 1 + (int)(game->weapon_seconds * 70.0 / 6.0);
+    if (frame > 4) {
+        game->weapon_frame = 0;
+        game->weapon_seconds = 0.0;
+    } else {
+        game->weapon_frame = (uint8_t)frame;
     }
 }
 
@@ -481,8 +497,9 @@ void game_update(GameState *game, const PlayerCommand *command, double seconds)
     player_rotate(&game->player, command->look_radians);
     if (command->use_pressed)
         use_adjacent_door(game);
-    if (command->attack_pressed)
+    if (command->attack_pressed && !game->weapon_frame)
         player_attack(game);
+    update_weapon(game, seconds);
     update_doors(game, seconds);
     update_guards(game, seconds);
     player_update(&game->player, game->map.planes[0], game->blocked,
