@@ -100,6 +100,19 @@ int main(void)
     assert(fabs(patrol.guards[0].x - (2.5 + 0.546875)) < 0.000001);
     assert(patrol.guards[0].frame == 3);
 
+    WolfMap turn_map = open_map();
+    turn_map.planes[1][4 * MAP_SIDE + 2] = 112;
+    turn_map.planes[1][4 * MAP_SIDE + 3] = 92;
+    game_init(&patrol, &turn_map, 1);
+    for (int step = 0; step < 20; ++step)
+        game_update(&patrol, &(PlayerCommand){0}, 0.05);
+    assert(patrol.guards[0].direction == 0 && patrol.guards[0].y == 4.5);
+    for (int step = 0; step < 17; ++step)
+        game_update(&patrol, &(PlayerCommand){0}, 0.05);
+    assert(patrol.guards[0].x == 3.5 && patrol.guards[0].y == 4.5);
+    game_update(&patrol, &(PlayerCommand){0}, 0.05);
+    assert(patrol.guards[0].direction == 1 && patrol.guards[0].y < 4.5);
+
     game_init(&patrol, &patrol_map, 1);
     patrol.map.planes[1][4 * MAP_SIDE + 2] = 92;
     game_update(&patrol, &(PlayerCommand){0}, 0.05);
@@ -188,6 +201,45 @@ int main(void)
         assert(patrol.guards[0].x < 3.0);
         assert(patrol.doors[0].action == DOOR_CLOSED);
     }
+
+    WolfMap combat_map = open_map();
+    combat_map.planes[1][2 * MAP_SIDE + 4] = 110;
+    GameState shot_a, shot_b;
+    game_init(&shot_a, &combat_map, 1);
+    game_init(&shot_b, &combat_map, 1);
+    shot_a.guards[0].health = 100;
+    shot_b.guards[0].health = 100;
+    const PlayerCommand attack = {.attack_pressed = 1};
+    game_update(&shot_a, &attack, 0.0);
+    game_update(&shot_b, &attack, 0.0);
+    assert(shot_a.ammo == 7 && shot_a.guards[0].health < 100);
+    assert(shot_a.guards[0].health == shot_b.guards[0].health);
+    shot_a.ammo = 0;
+    const int health_before_empty = shot_a.guards[0].health;
+    game_update(&shot_a, &attack, 0.0);
+    assert(shot_a.guards[0].health == health_before_empty);
+
+    combat_map.planes[0][2 * MAP_SIDE + 3] = 1;
+    game_init(&shot_a, &combat_map, 1);
+    game_update(&shot_a, &attack, 0.0);
+    assert(shot_a.ammo == 7 && shot_a.guards[0].health == 25);
+
+    combat_map = open_map();
+    combat_map.planes[1][2 * MAP_SIDE + 4] = 110;
+    combat_map.planes[1][2 * MAP_SIDE + 5] = 110;
+    game_init(&shot_a, &combat_map, 1);
+    game_update(&shot_a, &attack, 0.0);
+    assert(shot_a.guards[0].health < 25 && shot_a.guards[1].health == 25);
+
+    game_init(&shot_a, &combat_map, 1);
+    shot_a.guards[0].health = 1;
+    const double death_x = shot_a.guards[0].x;
+    game_update(&shot_a, &attack, 0.05);
+    assert(shot_a.guards[0].dead && shot_a.score == 100);
+    for (int step = 0; step < 20; ++step)
+        game_update(&shot_a, &(PlayerCommand){0}, 0.05);
+    assert(shot_a.guards[0].x == death_x &&
+           shot_a.guards[0].death_seconds > 0.5);
 
     GameState pickup = game_with_object(47);
     pickup.health = 90;

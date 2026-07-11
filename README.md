@@ -33,7 +33,9 @@ portável estiver funcional.
 - objetos sólidos participam da colisão e pickups atualizam o estado do jogador;
 - vida, munição, armas, chaves, vidas, score e tesouros mantidos na simulação;
 - portas móveis com abertura parcial, fechaduras, colisão e fechamento automático;
-- guardas comuns patrulham, perseguem o jogador e atravessam portas normais;
+- guardas comuns patrulham por células, perseguem e atravessam portas normais;
+- disparos atingem guardas, consomem munição e deixam cadáveres;
+- pistola inicial exibida em primeira pessoa;
 - código histórico preservado em `WOLFSRC/`.
 
 O primeiro mapa pode ser explorado com teclado e mouse. Portas abrem com `Space`,
@@ -64,7 +66,8 @@ cmake --build build
 ```
 
 Controles: `W`/`↑` avança, `S`/`↓` recua, `A`/`←` e `D`/`→` giram, o mouse
-controla a direção horizontal, `Space` opera a porta à frente e `Esc` encerra.
+controla a direção horizontal, `Space` opera a porta à frente, `Ctrl` ou botão
+esquerdo dispara e `Esc` encerra.
 
 Verificação rápida:
 

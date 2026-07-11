@@ -23,7 +23,7 @@ int main(void)
     make_map(&map);
     uint8_t wall[WALL_PIXELS];
     memset(wall, 10, sizeof(wall));
-    VSwapSprite sprites[90] = {0};
+    VSwapSprite sprites[422] = {0};
     memset(sprites[2].pixels, 20, sizeof(sprites[2].pixels));
     memset(sprites[2].mask, 1, sizeof(sprites[2].mask));
     sprites[2].right = WALL_SIZE - 1;
@@ -37,9 +37,14 @@ int main(void)
         memset(sprites[index].mask, 1, sizeof(sprites[index].mask));
         sprites[index].right = WALL_SIZE - 1;
     }
+    for (int index = 90; index < 96; ++index) {
+        memset(sprites[index].pixels, index, sizeof(sprites[index].pixels));
+        memset(sprites[index].mask, 1, sizeof(sprites[index].mask));
+        sprites[index].right = WALL_SIZE - 1;
+    }
     VSwap vswap = {
         .walls = {1, wall},
-        .sprite_count = 90,
+        .sprite_count = 422,
         .sprites = sprites
     };
     GameState game = {0};
@@ -105,6 +110,28 @@ int main(void)
     render_scene(pixels, &game, &vswap);
     assert(south_view != pixels[(RENDER_HEIGHT / 2) * RENDER_WIDTH +
                                 RENDER_WIDTH / 2]);
+
+    game.guards[0] = (Guard){.x = 4.5, .y = 4.5, .active = 1, .dead = 1};
+    render_scene(pixels, &game, &vswap);
+    const uint32_t dying = pixels[(RENDER_HEIGHT / 2) * RENDER_WIDTH +
+                                  RENDER_WIDTH / 2];
+    game.guards[0].death_seconds = 1.0;
+    render_scene(pixels, &game, &vswap);
+    const uint32_t corpse = pixels[(RENDER_HEIGHT / 2) * RENDER_WIDTH +
+                                   RENDER_WIDTH / 2];
+    assert(dying != corpse);
+
+    game.guards[0].active = 0;
+    game.current_weapon = WEAPON_PISTOL;
+    render_scene(pixels, &game, &vswap);
+    const uint32_t no_weapon = pixels[(RENDER_HEIGHT - 1) * RENDER_WIDTH +
+                                      RENDER_WIDTH / 2];
+    memset(sprites[421].pixels, 120, sizeof(sprites[421].pixels));
+    memset(sprites[421].mask, 1, sizeof(sprites[421].mask));
+    sprites[421].right = WALL_SIZE - 1;
+    render_scene(pixels, &game, &vswap);
+    assert(no_weapon != pixels[(RENDER_HEIGHT - 1) * RENDER_WIDTH +
+                               RENDER_WIDTH / 2]);
     puts("RENDER OK");
     return 0;
 }

@@ -271,16 +271,44 @@ static int move_guard(GameState *game, Guard *guard, uint8_t direction,
     return 1;
 }
 
+static double distance_to_next_center(const Guard *guard, uint8_t direction)
+{
+    switch (direction) {
+    case 0:
+        return floor(guard->x) + 1.5 - guard->x;
+    case 1:
+        return guard->y - (floor(guard->y) - 0.5);
+    case 2:
+        return guard->x - (floor(guard->x) - 0.5);
+    default:
+        return floor(guard->y) + 1.5 - guard->y;
+    }
+}
+
+static int start_guard_move(GameState *game, Guard *guard, uint8_t direction,
+                            double distance)
+{
+    guard->move_remaining = distance_to_next_center(guard, direction);
+    const double movement = distance < guard->move_remaining
+                                ? distance : guard->move_remaining;
+    if (!move_guard(game, guard, direction, movement)) {
+        guard->move_remaining = 0.0;
+        return 0;
+    }
+    guard->move_remaining -= movement;
+    return 1;
+}
+
 static void chase_player(GameState *game, Guard *guard, double distance)
 {
-    if (guard->chase_remaining > 0.0) {
-        const double movement = distance < guard->chase_remaining
-                                    ? distance : guard->chase_remaining;
+    if (guard->move_remaining > 0.0) {
+        const double movement = distance < guard->move_remaining
+                                    ? distance : guard->move_remaining;
         if (move_guard(game, guard, guard->direction, movement)) {
-            guard->chase_remaining -= movement;
+            guard->move_remaining -= movement;
             return;
         }
-        guard->chase_remaining = 0.0;
+        guard->move_remaining = 0.0;
     }
 
     const double dx = game->player.x - guard->x;
@@ -293,9 +321,55 @@ static void chase_player(GameState *game, Guard *guard, double distance)
         first = horizontal;
         second = vertical;
     }
-    if (move_guard(game, guard, first, distance) ||
-        move_guard(game, guard, second, distance))
-        guard->chase_remaining = 1.0 - distance;
+    if (!start_guard_move(game, guard, first, distance))
+        start_guard_move(game, guard, second, distance);
+}
+
+static void player_attack(GameState *game)
+{
+    if (game->current_weapon == WEAPON_KNIFE || game->ammo <= 0)
+        return;
+    --game->ammo;
+
+    const double direction_x = cos(game->player.angle);
+    const double direction_y = sin(game->player.angle);
+    Guard *target = NULL;
+    double target_distance = 1e30;
+    for (size_t index = 0; index < game->guard_count; ++index) {
+        Guard *guard = &game->guards[index];
+        if (!guard->active || guard->dead)
+            continue;
+        const double dx = guard->x - game->player.x;
+        const double dy = guard->y - game->player.y;
+        const double forward = dx * direction_x + dy * direction_y;
+        const double side = fabs(dx * direction_y - dy * direction_x);
+        if (forward <= 0.0 || side > forward * 0.1)
+            continue;
+        const double distance = sqrt(dx * dx + dy * dy);
+        RayHit hit;
+        if (raycast_hit(game->map.planes[0], game->door_at, game->doors,
+                        game->player.x, game->player.y,
+                        dx / distance, dy / distance, &hit) &&
+            hit.distance < distance)
+            continue;
+        if (distance < target_distance) {
+            target = guard;
+            target_distance = distance;
+        }
+    }
+    if (!target)
+        return;
+
+    int damage = (int)(game_random(game) & 0xffu) / 4;
+    if (!target->alerted)
+        damage *= 2;
+    target->alerted = 1;
+    target->health -= damage;
+    if (target->health <= 0) {
+        target->dead = 1;
+        target->death_seconds = 0.0;
+        game->score += 100;
+    }
 }
 
 static void update_guards(GameState *game, double seconds)
@@ -304,6 +378,10 @@ static void update_guards(GameState *game, double seconds)
         Guard *guard = &game->guards[index];
         if (!guard->active)
             continue;
+        if (guard->dead) {
+            guard->death_seconds += seconds;
+            continue;
+        }
 
         if (!guard->alerted && guard_sees_player(game, guard))
             guard->alerted = 1;
@@ -313,13 +391,22 @@ static void update_guards(GameState *game, double seconds)
         if (guard->alerted) {
             chase_player(game, guard, guard_patrol_speed * 3.0 * seconds);
         } else {
-            const size_t cell = (size_t)guard->y * MAP_SIDE + (size_t)guard->x;
-            const uint16_t arrow = game->map.planes[1][cell];
-            /* ponytail: cardinal paths suffice until diagonal actor movement exists. */
-            if (arrow >= 90 && arrow <= 96 && !(arrow & 1u))
-                guard->direction = (arrow - 90) / 2;
-            move_guard(game, guard, guard->direction,
-                       guard_patrol_speed * seconds);
+            if (guard->move_remaining <= 0.0) {
+                guard->x = floor(guard->x) + 0.5;
+                guard->y = floor(guard->y) + 0.5;
+                const size_t cell = (size_t)guard->y * MAP_SIDE +
+                                    (size_t)guard->x;
+                const uint16_t arrow = game->map.planes[1][cell];
+                /* ponytail: cardinal paths suffice until diagonal movement exists. */
+                if (arrow >= 90 && arrow <= 96 && !(arrow & 1u))
+                    guard->direction = (arrow - 90) / 2;
+                guard->move_remaining = 1.0;
+            }
+            const double distance = guard_patrol_speed * seconds;
+            const double movement = distance < guard->move_remaining
+                                        ? distance : guard->move_remaining;
+            if (move_guard(game, guard, guard->direction, movement))
+                guard->move_remaining -= movement;
         }
 
         guard->animation_seconds = fmod(guard->animation_seconds + seconds,
@@ -367,6 +454,7 @@ void game_init(GameState *game, const WolfMap *map, uint32_t random_seed)
             guard->direction = (code - 108) % 4;
             guard->patrol = code >= 112;
             guard->active = 1;
+            guard->health = 25;
             continue;
         }
         if (code < 23 || code > 70)
@@ -393,6 +481,8 @@ void game_update(GameState *game, const PlayerCommand *command, double seconds)
     player_rotate(&game->player, command->look_radians);
     if (command->use_pressed)
         use_adjacent_door(game);
+    if (command->attack_pressed)
+        player_attack(game);
     update_doors(game, seconds);
     update_guards(game, seconds);
     player_update(&game->player, game->map.planes[0], game->blocked,

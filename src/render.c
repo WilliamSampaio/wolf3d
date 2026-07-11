@@ -36,6 +36,10 @@ static int compare_distance(const void *left, const void *right)
 static size_t guard_sprite(const Guard *guard, const Player *player)
 {
     static const size_t walking_sprite[4] = {58, 66, 74, 82};
+    if (guard->dead) {
+        const int frame = (int)(guard->death_seconds * 70.0 / 15.0);
+        return frame < 3 ? 91 + frame : 95;
+    }
     const double pi = 3.14159265358979323846;
     const double facing = -guard->direction * pi / 2.0;
     double relative = facing - atan2(player->y - guard->y,
@@ -125,6 +129,33 @@ static void draw_sprite(uint32_t pixels[RENDER_WIDTH * RENDER_HEIGHT],
     }
 }
 
+static void draw_weapon(uint32_t pixels[RENDER_WIDTH * RENDER_HEIGHT],
+                        const GameState *game, const VSwap *vswap)
+{
+    static const size_t ready_sprite[4] = {416, 421, 426, 431};
+    if (game->current_weapon < WEAPON_KNIFE ||
+        game->current_weapon > WEAPON_CHAIN_GUN)
+        return;
+    const size_t index = ready_sprite[game->current_weapon];
+    if (index >= vswap->sprite_count)
+        return;
+    const VSwapSprite *sprite = &vswap->sprites[index];
+    const int size = 160;
+    const int left = (RENDER_WIDTH - size) / 2;
+    const int top = RENDER_HEIGHT - size;
+    for (int y = 0; y < size; ++y) {
+        const int texture_y = y * WALL_SIZE / size;
+        for (int x = 0; x < size; ++x) {
+            const int texture_x = x * WALL_SIZE / size;
+            const size_t source = (size_t)texture_y * WALL_SIZE + texture_x;
+            if (texture_x >= sprite->left && texture_x <= sprite->right &&
+                sprite->mask[source])
+                pixels[(top + y) * RENDER_WIDTH + left + x] =
+                    palette_color(sprite->pixels[source], 4);
+        }
+    }
+}
+
 void render_scene(uint32_t pixels[RENDER_WIDTH * RENDER_HEIGHT],
                   const GameState *game, const VSwap *vswap)
 {
@@ -189,4 +220,5 @@ void render_scene(uint32_t pixels[RENDER_WIDTH * RENDER_HEIGHT],
     for (size_t index = 0; index < count; ++index)
         draw_sprite(pixels, &vswap->sprites[sprites[index].sprite],
                     &sprites[index], player, depth);
+    draw_weapon(pixels, game, vswap);
 }

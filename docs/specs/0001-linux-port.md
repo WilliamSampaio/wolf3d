@@ -314,6 +314,7 @@ Critérios de aceitação do M5F:
 4. [x] patrulhas são validadas visualmente no primeiro mapa shareware;
 5. [x] build, testes e smoke checks continuam passando.
 6. [x] rotações laterais correspondem à direção cardinal do movimento.
+7. [x] guardas mudam de direção somente no centro das células.
 
 Setas diagonais, abertura de portas por atores, colisão entre atores, percepção,
 perseguição e combate permanecem fora do M5F.
@@ -353,11 +354,34 @@ Critérios de aceitação do M5H:
 2. [x] guarda retoma o movimento após a abertura completa;
 3. [x] porta aberta não fecha enquanto um guarda obstrui seu plano;
 4. [x] guardas não operam portas trancadas ou de elevador;
-5. [ ] interação é validada no primeiro mapa shareware;
+5. [x] interação é validada no primeiro mapa shareware;
 6. [x] build, testes e smoke checks continuam passando.
 
 Escolha de rotas alternativas, chaves para atores, coordenação entre guardas,
 combate, HUD e áudio permanecem fora do M5H.
+
+### M5I — contrato de tiro do jogador e morte de guardas
+
+- disparar a pistola por borda de pressão de `Ctrl` ou botão esquerdo do mouse;
+- exibir a pistola pronta em primeira pessoa desde o início do mapa;
+- consumir uma munição por disparo, inclusive quando não houver alvo;
+- atingir somente o guarda vivo mais próximo da mira e com linha de visão livre;
+- aplicar dano determinístico pelo RNG da simulação e alertar guardas atingidos;
+- remover guardas mortos da simulação, somar pontuação e exibir a sequência de
+  morte seguida pelo cadáver.
+
+Critérios de aceitação do M5I:
+
+1. [x] disparos consomem munição e não ocorrem com carregador vazio;
+2. [x] mira, distância e paredes selecionam somente um alvo válido;
+3. [x] dano e morte são reproduzíveis com a mesma semente;
+4. [x] guardas mortos param de perseguir e deixam um cadáver renderizado;
+5. [ ] tiro e morte são validados no primeiro mapa shareware;
+6. [x] build, testes e smoke checks continuam passando.
+7. [x] a pistola inicial é renderizada sobre a visão do cenário.
+
+Faca, armas automáticas, animação de disparo da arma, dor, drops, ataques
+inimigos, morte do jogador, HUD, áudio e alertas por som permanecem fora do M5I.
 
 ## Regra de documentação
 

@@ -52,8 +52,11 @@ typedef struct {
     uint8_t active;
     uint8_t alerted;
     uint8_t frame;
+    uint8_t dead;
+    int health;
     double animation_seconds;
-    double chase_remaining;
+    double death_seconds;
+    double move_remaining;
 } Guard;
 
 enum {
