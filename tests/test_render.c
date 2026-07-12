@@ -130,13 +130,13 @@ int main(void)
     game.guards[0].active = 0;
     game.current_weapon = WEAPON_PISTOL;
     render_scene(pixels, &game, &vswap);
-    const uint32_t no_weapon = pixels[(RENDER_HEIGHT - 1) * RENDER_WIDTH +
+    const uint32_t no_weapon = pixels[(RENDER_HEIGHT - 21) * RENDER_WIDTH +
                                       RENDER_WIDTH / 2];
     memset(sprites[421].pixels, 120, sizeof(sprites[421].pixels));
     memset(sprites[421].mask, 1, sizeof(sprites[421].mask));
     sprites[421].right = WALL_SIZE - 1;
     render_scene(pixels, &game, &vswap);
-    const uint32_t ready_weapon = pixels[(RENDER_HEIGHT - 1) * RENDER_WIDTH +
+    const uint32_t ready_weapon = pixels[(RENDER_HEIGHT - 21) * RENDER_WIDTH +
                                          RENDER_WIDTH / 2];
     assert(no_weapon != ready_weapon);
     memset(sprites[422].pixels, 121, sizeof(sprites[422].pixels));
@@ -144,7 +144,7 @@ int main(void)
     sprites[422].right = WALL_SIZE - 1;
     game.weapon_frame = 1;
     render_scene(pixels, &game, &vswap);
-    assert(ready_weapon != pixels[(RENDER_HEIGHT - 1) * RENDER_WIDTH +
+    assert(ready_weapon != pixels[(RENDER_HEIGHT - 21) * RENDER_WIDTH +
                                   RENDER_WIDTH / 2]);
 
     game.current_weapon = -1;
@@ -159,7 +159,21 @@ int main(void)
 
     game.guards[0].active = 0;
     game.damage_seconds = 0.0;
+    game.health = 100;
+    game.ammo = 8;
+    game.lives = 3;
     render_scene(pixels, &game, &vswap);
+    uint64_t hud_before = 0;
+    for (int index = (RENDER_HEIGHT - 20) * RENDER_WIDTH;
+         index < RENDER_HEIGHT * RENDER_WIDTH; ++index)
+        hud_before = hud_before * 33u + pixels[index];
+    game.health = 99;
+    render_scene(pixels, &game, &vswap);
+    uint64_t hud_after = 0;
+    for (int index = (RENDER_HEIGHT - 20) * RENDER_WIDTH;
+         index < RENDER_HEIGHT * RENDER_WIDTH; ++index)
+        hud_after = hud_after * 33u + pixels[index];
+    assert(hud_before != hud_after);
     const uint32_t normal_view = pixels[0];
     game.damage_seconds = 0.1;
     render_scene(pixels, &game, &vswap);

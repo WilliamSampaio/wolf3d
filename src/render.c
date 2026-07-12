@@ -2,6 +2,7 @@
 
 #include <math.h>
 #include <stddef.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "game_palette.h"
@@ -144,7 +145,7 @@ static void draw_weapon(uint32_t pixels[RENDER_WIDTH * RENDER_HEIGHT],
     const VSwapSprite *sprite = &vswap->sprites[index];
     const int size = 160;
     const int left = (RENDER_WIDTH - size) / 2;
-    const int top = RENDER_HEIGHT - size;
+    const int top = RENDER_HEIGHT - 20 - size;
     for (int y = 0; y < size; ++y) {
         const int texture_y = y * WALL_SIZE / size;
         for (int x = 0; x < size; ++x) {
@@ -155,6 +156,53 @@ static void draw_weapon(uint32_t pixels[RENDER_WIDTH * RENDER_HEIGHT],
                 pixels[(top + y) * RENDER_WIDTH + left + x] =
                     palette_color(sprite->pixels[source], 4);
         }
+    }
+}
+
+static const uint8_t *hud_glyph(char character)
+{
+    static const uint8_t glyphs[][5] = {
+        {7, 5, 5, 5, 7}, {2, 6, 2, 2, 7}, {7, 1, 7, 4, 7},
+        {7, 1, 7, 1, 7}, {5, 5, 7, 1, 1}, {7, 4, 7, 1, 7},
+        {7, 4, 7, 5, 7}, {7, 1, 1, 1, 1}, {7, 5, 7, 5, 7},
+        {7, 5, 7, 1, 7}, {5, 5, 7, 5, 5}, {2, 5, 7, 5, 5},
+        {4, 4, 4, 4, 7}, {7, 4, 7, 1, 7}
+    };
+    if (character >= '0' && character <= '9')
+        return glyphs[character - '0'];
+    if (character == 'H')
+        return glyphs[10];
+    if (character == 'A')
+        return glyphs[11];
+    if (character == 'L')
+        return glyphs[12];
+    if (character == 'S')
+        return glyphs[13];
+    return NULL;
+}
+
+static void draw_hud(uint32_t pixels[RENDER_WIDTH * RENDER_HEIGHT],
+                     const GameState *game)
+{
+    for (int y = RENDER_HEIGHT - 20; y < RENDER_HEIGHT; ++y)
+        for (int x = 0; x < RENDER_WIDTH; ++x)
+            pixels[y * RENDER_WIDTH + x] = 0xff101010u;
+
+    char text[32];
+    snprintf(text, sizeof(text), "H%03d A%02d L%d S%06d", game->health,
+             game->ammo, game->lives, game->score);
+    int left = 8;
+    for (const char *character = text; *character; ++character, left += 12) {
+        const uint8_t *rows = hud_glyph(*character);
+        if (!rows)
+            continue;
+        for (int y = 0; y < 5; ++y)
+            for (int x = 0; x < 3; ++x)
+                if (rows[y] & (4u >> x))
+                    for (int py = 0; py < 3; ++py)
+                        for (int px = 0; px < 3; ++px)
+                            pixels[(183 + y * 3 + py) * RENDER_WIDTH +
+                                   left + x * 3 + px] = 0xffe0e0e0u;
     }
 }
 
@@ -223,6 +271,7 @@ void render_scene(uint32_t pixels[RENDER_WIDTH * RENDER_HEIGHT],
         draw_sprite(pixels, &vswap->sprites[sprites[index].sprite],
                     &sprites[index], player, depth);
     draw_weapon(pixels, game, vswap);
+    draw_hud(pixels, game);
     if (game->damage_seconds > 0.0) {
         for (size_t index = 0; index < RENDER_WIDTH * RENDER_HEIGHT; ++index) {
             const uint32_t color = pixels[index];

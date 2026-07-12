@@ -39,6 +39,7 @@ portável estiver funcional.
 - guardas próximos atiram e causam dano com feedback visual;
 - morte escurece a tela e permite reiniciar o mapa consumindo uma vida;
 - guardas mortos deixam pentes de munição coletáveis;
+- HUD compacto mostra vida, munição, vidas e pontuação;
 - código histórico preservado em `WOLFSRC/`.
 
 O primeiro mapa pode ser explorado com teclado e mouse. Portas abrem com `Space`,

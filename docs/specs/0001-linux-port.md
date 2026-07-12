@@ -456,11 +456,30 @@ Critérios de aceitação do M5M:
 2. [x] célula ocupada desloca o drop para uma vizinha livre;
 3. [x] coleta adiciona munição e remove o pente do cenário;
 4. [x] nenhum drop é criado quando não existir célula ou slot seguro;
-5. [ ] drop é validado visualmente no primeiro mapa shareware;
+5. [x] drop é validado visualmente no primeiro mapa shareware;
 6. [x] build, testes e smoke checks continuam passando.
 
 Outros drops, tabelas de loot, armas inimigas, inventário visual e áudio
 permanecem fora do M5M.
+
+### M5N — contrato do HUD compacto
+
+- reservar uma faixa inferior sobre a visão para informações de jogo;
+- exibir vida, munição, vidas e pontuação atuais;
+- atualizar os valores imediatamente após dano, coleta, morte e pontuação;
+- manter a arma acima da faixa sem ocultar os indicadores.
+
+Critérios de aceitação do M5N:
+
+1. [x] HUD mostra os quatro valores iniciais;
+2. [x] alterações no `GameState` produzem pixels diferentes nos valores;
+3. [x] arma e HUD não se sobrepõem;
+4. [x] flash de dano e fade de morte continuam afetando a tela completa;
+5. [ ] HUD é validado visualmente no primeiro mapa shareware;
+6. [x] build, testes e smoke checks continuam passando.
+
+Face animada, chaves, arma selecionada, contador de tesouros, fonte do
+`VGAGRAPH` e status bar histórico permanecem fora do M5N.
 
 ## Regra de documentação
 
