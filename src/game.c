@@ -460,7 +460,7 @@ static void player_attack(GameState *game)
     double target_distance = 1e30;
     for (size_t index = 0; index < game->guard_count; ++index) {
         Guard *guard = &game->guards[index];
-        if (!guard->active || guard->dead)
+        if (!guard->active || guard->dead || guard->kind == ENEMY_GHOST)
             continue;
         const double dx = guard->x - game->player.x;
         const double dy = guard->y - game->player.y;
@@ -664,6 +664,27 @@ static void update_guards(GameState *game, double seconds)
             guard->death_seconds += seconds;
             continue;
         }
+        if (guard->kind == ENEMY_GHOST) {
+            const double dx = game->player.x - guard->x;
+            const double dy = game->player.y - guard->y;
+            if (fabs(dx) <= 1.0 && fabs(dy) <= 1.0) {
+                guard->contact_damage += seconds * 140.0;
+                const int damage = (int)guard->contact_damage;
+                guard->contact_damage -= damage;
+                if (damage) {
+                    game->health -= damage;
+                    if (game->health <= 0)
+                        kill_player(game);
+                    game->damage_seconds = 0.15;
+                }
+            } else {
+                chase_player(game, guard, dog_patrol_speed * seconds);
+            }
+            guard->animation_seconds = fmod(guard->animation_seconds + seconds,
+                                            20.0 / 70.0);
+            guard->frame = guard->animation_seconds * 70.0 < 10.0 ? 0 : 1;
+            continue;
+        }
         if (guard->shooting) {
             guard_shoot(game, guard, seconds);
             continue;
@@ -773,6 +794,17 @@ void game_init(GameState *game, const WolfMap *map, uint32_t random_seed)
             guard->active = 1;
             guard->kind = ENEMY_HANS;
             guard->health = 950;
+            continue;
+        }
+        if (code >= 224 && code <= 227) {
+            Guard *guard = &game->guards[game->guard_count++];
+            guard->x = cell % MAP_SIDE + 0.5;
+            guard->y = cell / MAP_SIDE + 0.5;
+            guard->direction = 0;
+            guard->active = 1;
+            guard->alerted = 1;
+            guard->kind = ENEMY_GHOST;
+            guard->variant = code - 224;
             continue;
         }
         if ((code >= 108 && code <= 123) ||

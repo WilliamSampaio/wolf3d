@@ -79,6 +79,12 @@ int main(void)
         memset(sprites[index].mask, 1, sizeof(sprites[index].mask));
         sprites[index].right = WALL_SIZE - 1;
     }
+    for (int index = 288; index < 296; ++index) {
+        memset(sprites[index].pixels, 205 + (index - 288) * 3,
+               sizeof(sprites[index].pixels));
+        memset(sprites[index].mask, 1, sizeof(sprites[index].mask));
+        sprites[index].right = WALL_SIZE - 1;
+    }
     VSwap vswap = {
         .walls = {1, wall},
         .sprite_count = 426,
@@ -188,6 +194,22 @@ int main(void)
     assert(hans != pixels[(RENDER_HEIGHT / 2) * RENDER_WIDTH +
                           RENDER_WIDTH / 2]);
     game.guards[0].dead = 0;
+    game.guards[0].kind = ENEMY_GHOST;
+    game.guards[0].variant = 0;
+    game.guards[0].frame = 0;
+    render_scene(pixels, &game, &vswap);
+    const uint32_t ghost_one = pixels[(RENDER_HEIGHT / 2) * RENDER_WIDTH +
+                                      RENDER_WIDTH / 2];
+    game.guards[0].frame = 1;
+    render_scene(pixels, &game, &vswap);
+    const uint32_t ghost_two = pixels[(RENDER_HEIGHT / 2) * RENDER_WIDTH +
+                                      RENDER_WIDTH / 2];
+    assert(ghost_one != ghost_two);
+    game.guards[0].variant = 1;
+    game.guards[0].frame = 0;
+    render_scene(pixels, &game, &vswap);
+    assert(ghost_one != pixels[(RENDER_HEIGHT / 2) * RENDER_WIDTH +
+                               RENDER_WIDTH / 2]);
     game.guards[0].kind = ENEMY_GUARD;
     game.map.planes[0][2 * MAP_SIDE + 3] = 1;
     render_scene(pixels, &game, &vswap);

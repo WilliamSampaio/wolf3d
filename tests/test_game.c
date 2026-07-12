@@ -137,6 +137,18 @@ int main(void)
            blocked.guards[0].health == 950 &&
            !blocked.guards[0].patrol);
 
+    WolfMap ghosts = open_map();
+    for (int variant = 0; variant < 4; ++variant)
+        ghosts.planes[1][8 * MAP_SIDE + variant + 1] = 224 + variant;
+    game_init(&blocked, &ghosts, 1);
+    assert(blocked.guard_count == 4);
+    for (int variant = 0; variant < 4; ++variant) {
+        assert(blocked.guards[variant].kind == ENEMY_GHOST);
+        assert(blocked.guards[variant].variant == variant);
+        assert(blocked.guards[variant].alerted &&
+               blocked.guards[variant].direction == 0);
+    }
+
     WolfMap patrol_map = open_map();
     patrol_map.planes[1][4 * MAP_SIDE + 2] = 112;
     GameState patrol;
@@ -438,6 +450,24 @@ int main(void)
     second.player.y = second.statics[0].y + 0.5;
     game_update(&second, &(PlayerCommand){0}, 0.0);
     assert(second.keys == 1u && !second.statics[0].active);
+
+    WolfMap ghost_map = open_map();
+    ghost_map.planes[1][2 * MAP_SIDE + 7] = 224;
+    game_init(&blocked, &ghost_map, 1);
+    const double ghost_start = blocked.guards[0].x;
+    game_update(&blocked, &(PlayerCommand){0}, 0.05);
+    assert(blocked.guards[0].x < ghost_start);
+    for (int step = 0; step < 2; ++step)
+        game_update(&blocked, &(PlayerCommand){0}, 0.05);
+    assert(blocked.guards[0].frame == 1);
+
+    ghost_map = open_map();
+    ghost_map.planes[1][2 * MAP_SIDE + 3] = 224;
+    game_init(&blocked, &ghost_map, 1);
+    game_update(&blocked, &(PlayerCommand){0}, 0.05);
+    assert(blocked.health == 93 && blocked.guards[0].x == 3.5);
+    game_update(&blocked, &(PlayerCommand){.attack_pressed = 1}, 0.0);
+    assert(blocked.ammo == 7 && !blocked.guards[0].dead);
 
     WolfMap officer_combat_map = open_map();
     officer_combat_map.planes[1][2 * MAP_SIDE + 3] = 116;

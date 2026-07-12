@@ -49,7 +49,8 @@ typedef enum {
     ENEMY_OFFICER,
     ENEMY_DOG,
     ENEMY_SS,
-    ENEMY_HANS
+    ENEMY_HANS,
+    ENEMY_GHOST
 } EnemyKind;
 
 typedef struct {
@@ -63,11 +64,13 @@ typedef struct {
     uint8_t dead;
     uint8_t shooting;
     uint8_t shoot_frame;
+    uint8_t variant;
     EnemyKind kind;
     int health;
     double animation_seconds;
     double death_seconds;
     double shoot_seconds;
+    double contact_damage;
     double move_remaining;
 } Guard;
 

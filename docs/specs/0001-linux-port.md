@@ -657,11 +657,31 @@ Critérios de aceitação do M5W:
 2. [x] caminhada, rajada e morte usam sprites e tempos próprios;
 3. [x] rajada resolve exatamente seis tiros determinísticos;
 4. [x] morte vale 5000 pontos e deixa a chave dourada coletável;
-5. [ ] Hans é validado visualmente no mapa final shareware;
+5. [x] Hans é validado visualmente no mapa final shareware;
 6. [x] build, testes e smoke checks continuam passando.
 
 Fala, sons, reação atrasada, animação de vitória de BJ e conclusão do episódio
 permanecem fora do M5W.
+
+### M5X — contrato dos fantasmas do nível secreto
+
+- instanciar Blinky, Clyde, Pinky e Inky pelos códigos 224–227;
+- renderizar os dois quadros não rotacionados próprios de cada variante;
+- perseguir imediatamente na velocidade `SPDDOG`, sem estado de alerta;
+- causar dano contínuo por contato e permanecer fora do jogador;
+- ignorar tiros, morte, pontuação e drops.
+
+Critérios de aceitação do M5X:
+
+1. [x] os quatro códigos criam variantes e sprites corretos;
+2. [x] animação alterna quadros a cada 10 tics;
+3. [x] perseguição respeita paredes, portas e velocidade própria;
+4. [x] contato causa dano por tempo e armas não afetam fantasmas;
+5. [ ] fantasmas são validados visualmente no nível secreto shareware;
+6. [x] build, testes e smoke checks continuam passando.
+
+Movimento diagonal, personalidades distintas, sons e fidelidade ao bug histórico
+de espera em portas permanecem fora do M5X.
 
 ## Regra de documentação
 

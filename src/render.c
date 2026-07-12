@@ -36,6 +36,9 @@ static int compare_distance(const void *left, const void *right)
 
 static size_t guard_sprite(const Guard *guard, const Player *player)
 {
+    static const size_t ghost_sprite[4] = {288, 292, 290, 294};
+    if (guard->kind == ENEMY_GHOST)
+        return ghost_sprite[guard->variant] + guard->frame;
     static const size_t guard_walking[4] = {58, 66, 74, 82};
     static const size_t officer_walking[4] = {246, 254, 262, 270};
     const int officer = guard->kind == ENEMY_OFFICER;
