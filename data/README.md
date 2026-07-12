@@ -21,3 +21,7 @@ Execute a validação visual com:
 ```
 
 Não substitua esses arquivos por dados da edição comercial `.WL6`.
+
+Dados comerciais próprios podem ser mantidos localmente em `full-v1.4/`, que é
+ignorado pelo Git. Execute-os separadamente com
+`./build/wolf3d --data data/full-v1.4`; eles não fazem parte da validação M5.

@@ -47,7 +47,9 @@ typedef struct {
 typedef enum {
     ENEMY_GUARD,
     ENEMY_OFFICER,
-    ENEMY_DOG
+    ENEMY_DOG,
+    ENEMY_SS,
+    ENEMY_HANS
 } EnemyKind;
 
 typedef struct {
@@ -101,6 +103,8 @@ typedef struct {
     double weapon_seconds;
     int treasure_count;
     int treasure_total;
+    int secret_count;
+    int secret_total;
     Door doors[MAP_CELLS];
     size_t door_count;
     int16_t door_at[MAP_CELLS];

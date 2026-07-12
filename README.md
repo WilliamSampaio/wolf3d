@@ -49,6 +49,9 @@ núcleo portátil está funcional.
 - elevador carrega o mapa seguinte preservando o estado da campanha;
 - oficiais usam sprites, resistência, velocidade e pontuação próprias;
 - cães patrulham, perseguem, mordem e usam animações próprias;
+- soldados SS usam rajadas, resistência e drops próprios;
+- pushwalls revelam passagens secretas e atualizam colisão e raycast;
+- Hans Grosse possui rajada, resistência, morte e drop de chave próprios;
 - código histórico preservado em `WOLFSRC/`.
 
 O primeiro mapa pode ser explorado com teclado e mouse. Portas abrem com `Space`,

@@ -597,11 +597,71 @@ Critérios de aceitação do M5T:
 2. [x] patrulha, perseguição e animações usam velocidades e tempos próprios;
 3. [x] mordida resolve uma vez, por alcance, chance e dano determinísticos;
 4. [x] cães mortos valem 200 pontos, não deixam drop e exibem cadáver próprio;
-5. [ ] cães são validados visualmente nos mapas shareware;
+5. [x] cães são validados visualmente nos mapas shareware;
 6. [x] build, testes e smoke checks continuam passando.
 
 Overlays de dificuldade, SS, mutantes, chefes, sons e comportamento diagonal
 permanecem fora do M5T.
+
+### M5U — contrato dos soldados SS
+
+- instanciar SS parados e em patrulha pelos códigos 126–133;
+- reutilizar percepção, caminhos, portas, colisão e tiro dos atores armados;
+- aplicar sprites próprios, 100 pontos de vida, perseguição 4× e 500 pontos;
+- executar rajada de quatro tiros e morte nos tempos originais;
+- deixar metralhadora se ainda não possuída, ou munição caso contrário.
+
+Critérios de aceitação do M5U:
+
+1. [x] os oito códigos criam SS com direção e patrulha corretas;
+2. [x] movimento, rajada e animações usam velocidades e tempos próprios;
+3. [x] a rajada resolve exatamente quatro tiros determinísticos;
+4. [x] morte vale 500 pontos e seleciona o drop conforme o inventário;
+5. [x] SS são validados visualmente nos mapas shareware;
+6. [x] build, testes e smoke checks continuam passando.
+
+Overlays de dificuldade, mutantes, chefes, áudio e estados de dor permanecem
+fora do M5U.
+
+### M5V — contrato inicial de pushwalls
+
+- reconhecer marcador 98 no plano de objetos ao usar uma parede adjacente;
+- mover a parede na direção cardinal do jogador por até duas células livres;
+- preservar tile/textura da parede e liberar as células atravessadas;
+- rejeitar movimento contra paredes, portas, objetos, atores ou jogador;
+- contabilizar cada pushwall ativada uma única vez.
+
+Critérios de aceitação do M5V:
+
+1. [x] pushwall livre avança duas células e abre a passagem;
+2. [x] obstrução após uma célula limita o avanço e obstrução imediata rejeita;
+3. [x] raycast e colisão usam a nova posição da parede;
+4. [x] marcador é removido e segredo incrementa somente na ativação válida;
+5. [x] pushwalls são validadas visualmente nos mapas shareware;
+6. [x] build, testes e smoke checks continuam passando.
+
+O movimento é instantâneo nesta primeira fatia. Geometria parcial e animação
+contínua no raycaster permanecem fora do M5V.
+
+### M5W — contrato de Hans Grosse
+
+- instanciar Hans pelo código 214, parado e voltado ao sul;
+- aplicar sprite não rotacionado, 950 pontos de vida e perseguição 3×;
+- executar rajada de seis tiros nos tempos originais;
+- aplicar sequência própria de morte, 5000 pontos e drop da chave dourada;
+- reutilizar percepção, portas, colisão e dano dos atores armados.
+
+Critérios de aceitação do M5W:
+
+1. [x] código 214 cria Hans com estado, direção e vida corretos;
+2. [x] caminhada, rajada e morte usam sprites e tempos próprios;
+3. [x] rajada resolve exatamente seis tiros determinísticos;
+4. [x] morte vale 5000 pontos e deixa a chave dourada coletável;
+5. [ ] Hans é validado visualmente no mapa final shareware;
+6. [x] build, testes e smoke checks continuam passando.
+
+Fala, sons, reação atrasada, animação de vitória de BJ e conclusão do episódio
+permanecem fora do M5W.
 
 ## Regra de documentação
 

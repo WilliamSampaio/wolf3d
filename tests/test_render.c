@@ -61,8 +61,20 @@ int main(void)
         memset(sprites[index].mask, 1, sizeof(sprites[index].mask));
         sprites[index].right = WALL_SIZE - 1;
     }
+    for (int index = 138; index < 187; ++index) {
+        memset(sprites[index].pixels, 130 + (index - 138) % 40,
+               sizeof(sprites[index].pixels));
+        memset(sprites[index].mask, 1, sizeof(sprites[index].mask));
+        sprites[index].right = WALL_SIZE - 1;
+    }
     for (int index = 238; index < 288; ++index) {
         memset(sprites[index].pixels, 30 + (index - 238) % 60,
+               sizeof(sprites[index].pixels));
+        memset(sprites[index].mask, 1, sizeof(sprites[index].mask));
+        sprites[index].right = WALL_SIZE - 1;
+    }
+    for (int index = 296; index < 307; ++index) {
+        memset(sprites[index].pixels, 170 + (index - 296) * 3,
                sizeof(sprites[index].pixels));
         memset(sprites[index].mask, 1, sizeof(sprites[index].mask));
         sprites[index].right = WALL_SIZE - 1;
@@ -142,6 +154,39 @@ int main(void)
     render_scene(pixels, &game, &vswap);
     assert(dog_jump != pixels[(RENDER_HEIGHT / 2) * RENDER_WIDTH +
                               RENDER_WIDTH / 2]);
+    game.guards[0].dead = 0;
+    game.guards[0].kind = ENEMY_SS;
+    render_scene(pixels, &game, &vswap);
+    const uint32_t ss = pixels[(RENDER_HEIGHT / 2) * RENDER_WIDTH +
+                               RENDER_WIDTH / 2];
+    assert(ss != dog);
+    game.guards[0].shooting = 1;
+    render_scene(pixels, &game, &vswap);
+    assert(ss != pixels[(RENDER_HEIGHT / 2) * RENDER_WIDTH +
+                        RENDER_WIDTH / 2]);
+    game.guards[0].shooting = 0;
+    game.guards[0].dead = 1;
+    render_scene(pixels, &game, &vswap);
+    assert(ss != pixels[(RENDER_HEIGHT / 2) * RENDER_WIDTH +
+                        RENDER_WIDTH / 2]);
+    game.guards[0].dead = 0;
+    game.guards[0].kind = ENEMY_HANS;
+    render_scene(pixels, &game, &vswap);
+    const uint32_t hans = pixels[(RENDER_HEIGHT / 2) * RENDER_WIDTH +
+                                 RENDER_WIDTH / 2];
+    game.guards[0].direction = 3;
+    render_scene(pixels, &game, &vswap);
+    assert(hans == pixels[(RENDER_HEIGHT / 2) * RENDER_WIDTH +
+                          RENDER_WIDTH / 2]);
+    game.guards[0].shooting = 1;
+    render_scene(pixels, &game, &vswap);
+    assert(hans != pixels[(RENDER_HEIGHT / 2) * RENDER_WIDTH +
+                          RENDER_WIDTH / 2]);
+    game.guards[0].shooting = 0;
+    game.guards[0].dead = 1;
+    render_scene(pixels, &game, &vswap);
+    assert(hans != pixels[(RENDER_HEIGHT / 2) * RENDER_WIDTH +
+                          RENDER_WIDTH / 2]);
     game.guards[0].dead = 0;
     game.guards[0].kind = ENEMY_GUARD;
     game.map.planes[0][2 * MAP_SIDE + 3] = 1;

@@ -40,6 +40,8 @@ static size_t guard_sprite(const Guard *guard, const Player *player)
     static const size_t officer_walking[4] = {246, 254, 262, 270};
     const int officer = guard->kind == ENEMY_OFFICER;
     const int dog = guard->kind == ENEMY_DOG;
+    const int ss = guard->kind == ENEMY_SS;
+    const int hans = guard->kind == ENEMY_HANS;
     if (guard->dead) {
         if (dog) {
             const int frame = (int)(guard->death_seconds * 70.0 / 15.0);
@@ -49,12 +51,19 @@ static size_t guard_sprite(const Guard *guard, const Player *player)
         const int frame = (int)(guard->death_seconds * 70.0 / frame_time);
         if (officer)
             return frame < 4 ? 279 + frame : 284;
+        if (ss)
+            return frame < 3 ? 179 + frame : 183;
+        if (hans)
+            return frame < 3 ? 304 + frame : 303;
         return frame < 3 ? 91 + frame : 95;
     }
     if (dog && guard->shooting && guard->shoot_frame < 3)
         return 135 + guard->shoot_frame;
     if (guard->shooting && !dog)
-        return (officer ? 285 : 96) + guard->shoot_frame;
+        return (hans ? 300 : officer ? 285 : ss ? 184 : 96) +
+               guard->shoot_frame;
+    if (hans)
+        return 296 + guard->frame;
     const double pi = 3.14159265358979323846;
     const double facing = -guard->direction * pi / 2.0;
     double relative = facing - atan2(player->y - guard->y,
@@ -64,12 +73,13 @@ static size_t guard_sprite(const Guard *guard, const Player *player)
     while (relative >= 2.0 * pi)
         relative -= 2.0 * pi;
     static const size_t dog_walking[4] = {99, 107, 115, 123};
+    static const size_t ss_walking[4] = {146, 154, 162, 170};
     const size_t *walking = dog ? dog_walking :
-                            officer ? officer_walking : guard_walking;
+                            ss ? ss_walking : officer ? officer_walking : guard_walking;
     const size_t base = dog && guard->shooting ? 99 :
                         guard->patrol || guard->alerted
                             ? walking[guard->frame]
-                            : dog ? 99 : officer ? 238 : 50;
+                            : dog ? 99 : ss ? 138 : officer ? 238 : 50;
     return base + ((int)(relative / (pi / 4.0) + 0.5) & 7);
 }
 

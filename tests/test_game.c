@@ -1,4 +1,5 @@
 #include "game.h"
+#include "raycast.h"
 
 #include <assert.h>
 #include <math.h>
@@ -114,6 +115,27 @@ int main(void)
         assert(blocked.guards[type].patrol == (type >= 4));
         assert(blocked.guards[type].health == 1);
     }
+
+    WolfMap ss_map = open_map();
+    for (int type = 0; type < 8; ++type)
+        ss_map.planes[1][7 * MAP_SIDE + type + 1] = 126 + type;
+    game_init(&blocked, &ss_map, 1);
+    assert(blocked.guard_count == 8);
+    for (int type = 0; type < 8; ++type) {
+        assert(blocked.guards[type].kind == ENEMY_SS);
+        assert(blocked.guards[type].direction == type % 4);
+        assert(blocked.guards[type].patrol == (type >= 4));
+        assert(blocked.guards[type].health == 100);
+    }
+
+    WolfMap hans_map = open_map();
+    hans_map.planes[1][2 * MAP_SIDE + 3] = 214;
+    game_init(&blocked, &hans_map, 1);
+    assert(blocked.guard_count == 1 &&
+           blocked.guards[0].kind == ENEMY_HANS &&
+           blocked.guards[0].direction == 3 &&
+           blocked.guards[0].health == 950 &&
+           !blocked.guards[0].patrol);
 
     WolfMap patrol_map = open_map();
     patrol_map.planes[1][4 * MAP_SIDE + 2] = 112;
@@ -370,6 +392,53 @@ int main(void)
         game_update(&second, &(PlayerCommand){0}, 0.05);
     assert(!second.guards[0].shooting);
 
+    WolfMap ss_attack_map = open_map();
+    ss_attack_map.planes[1][2 * MAP_SIDE + 3] = 128;
+    game_init(&second, &ss_attack_map, 1);
+    second.health = 1000;
+    game_update(&second, &(PlayerCommand){0}, 0.05);
+    assert(second.guards[0].shooting);
+    for (int step = 0; step < 32; ++step)
+        game_update(&second, &(PlayerCommand){0}, 0.05);
+    game_init(&first, &map, 1);
+    for (int roll = 0; roll < 8; ++roll)
+        game_random(&first);
+    assert(!second.guards[0].shooting &&
+           second.random_state == first.random_state && second.health < 1000);
+
+    game_init(&second, &ss_attack_map, 1);
+    second.guards[0].health = 1;
+    game_update(&second, &(PlayerCommand){.attack_pressed = 1}, 0.0);
+    assert(second.guards[0].dead && second.score == 500 &&
+           second.statics[0].kind == STATIC_MACHINE_GUN);
+    game_init(&first, &ss_attack_map, 1);
+    first.weapons |= 1u << WEAPON_MACHINE_GUN;
+    first.guards[0].health = 1;
+    game_update(&first, &(PlayerCommand){.attack_pressed = 1}, 0.0);
+    assert(first.statics[0].kind == STATIC_CLIP);
+
+    game_init(&second, &hans_map, 1);
+    second.health = 2000;
+    game_update(&second, &(PlayerCommand){0}, 0.05);
+    assert(second.guards[0].shooting);
+    for (int step = 0; step < 29; ++step)
+        game_update(&second, &(PlayerCommand){0}, 0.05);
+    game_init(&first, &map, 1);
+    for (int roll = 0; roll < 12; ++roll)
+        game_random(&first);
+    assert(!second.guards[0].shooting &&
+           second.random_state == first.random_state && second.health < 2000);
+
+    game_init(&second, &hans_map, 1);
+    second.guards[0].health = 1;
+    game_update(&second, &(PlayerCommand){.attack_pressed = 1}, 0.0);
+    assert(second.guards[0].dead && second.score == 5000 &&
+           second.statics[0].kind == STATIC_GOLD_KEY);
+    second.player.x = second.statics[0].x + 0.5;
+    second.player.y = second.statics[0].y + 0.5;
+    game_update(&second, &(PlayerCommand){0}, 0.0);
+    assert(second.keys == 1u && !second.statics[0].active);
+
     WolfMap officer_combat_map = open_map();
     officer_combat_map.planes[1][2 * MAP_SIDE + 3] = 116;
     game_init(&second, &officer_combat_map, 1);
@@ -585,6 +654,42 @@ int main(void)
     assert(elevator_game.keys == 0 && elevator_game.treasure_count == 0 &&
            !elevator_game.player_dead && !elevator_game.level_complete &&
            elevator_game.random_state == 2);
+
+    WolfMap push_map = open_map();
+    push_map.planes[0][2 * MAP_SIDE + 3] = 5;
+    push_map.planes[1][2 * MAP_SIDE + 3] = 98;
+    game_init(&elevator_game, &push_map, 1);
+    assert(elevator_game.secret_total == 1);
+    game_update(&elevator_game, &use, 0.0);
+    assert(elevator_game.secret_count == 1 && elevator_game.secret_total == 1);
+    assert(elevator_game.map.planes[0][2 * MAP_SIDE + 3] == 107 &&
+           elevator_game.map.planes[0][2 * MAP_SIDE + 4] == 107 &&
+           elevator_game.map.planes[0][2 * MAP_SIDE + 5] == 5 &&
+           elevator_game.map.planes[1][2 * MAP_SIDE + 3] == 0);
+    RayHit pushed_hit;
+    assert(raycast_hit(elevator_game.map.planes[0], elevator_game.door_at,
+                       elevator_game.doors, elevator_game.player.x,
+                       elevator_game.player.y, 1.0, 0.0, &pushed_hit));
+    assert(pushed_hit.map_x == 5 && pushed_hit.tile == 5);
+    for (int step = 0; step < 20; ++step)
+        game_update(&elevator_game, &forward, 0.05);
+    assert(elevator_game.player.x > 4.0 && elevator_game.player.x < 4.81);
+
+    push_map = open_map();
+    push_map.planes[0][2 * MAP_SIDE + 3] = 5;
+    push_map.planes[1][2 * MAP_SIDE + 3] = 98;
+    push_map.planes[0][2 * MAP_SIDE + 5] = 1;
+    game_init(&elevator_game, &push_map, 1);
+    game_update(&elevator_game, &use, 0.0);
+    assert(elevator_game.map.planes[0][2 * MAP_SIDE + 4] == 5 &&
+           elevator_game.secret_count == 1);
+
+    push_map.planes[0][2 * MAP_SIDE + 4] = 1;
+    game_init(&elevator_game, &push_map, 1);
+    game_update(&elevator_game, &use, 0.0);
+    assert(elevator_game.map.planes[0][2 * MAP_SIDE + 3] == 5 &&
+           elevator_game.map.planes[1][2 * MAP_SIDE + 3] == 98 &&
+           elevator_game.secret_count == 0);
     puts("GAME OK");
     return 0;
 }

@@ -153,6 +153,54 @@ static void operate_door(GameState *game, Door *door)
     }
 }
 
+static int push_destination_open(const GameState *game, int x, int y)
+{
+    if (x < 0 || x >= MAP_SIDE || y < 0 || y >= MAP_SIDE)
+        return 0;
+    const size_t cell = (size_t)y * MAP_SIDE + x;
+    if (game->blocked[cell] || game->door_at[cell] >= 0)
+        return 0;
+    const uint16_t tile = game->map.planes[0][cell];
+    if (tile && tile < 107)
+        return 0;
+    if ((int)game->player.x == x && (int)game->player.y == y)
+        return 0;
+    for (size_t index = 0; index < game->guard_count; ++index)
+        if (game->guards[index].active && !game->guards[index].dead &&
+            (int)game->guards[index].x == x &&
+            (int)game->guards[index].y == y)
+            return 0;
+    return 1;
+}
+
+static void push_wall(GameState *game, int x, int y, int direction_x,
+                      int direction_y)
+{
+    const int first_x = x + direction_x;
+    const int first_y = y + direction_y;
+    if (!push_destination_open(game, first_x, first_y))
+        return;
+    int final_x = first_x;
+    int final_y = first_y;
+    const int second_x = first_x + direction_x;
+    const int second_y = first_y + direction_y;
+    if (push_destination_open(game, second_x, second_y)) {
+        final_x = second_x;
+        final_y = second_y;
+    }
+
+    const size_t source = (size_t)y * MAP_SIDE + x;
+    const uint16_t wall = game->map.planes[0][source];
+    const uint16_t floor = game->map.planes[0][(int)game->player.y * MAP_SIDE +
+                                               (int)game->player.x];
+    /* ponytail: instant tile movement; add partial geometry with animation. */
+    game->map.planes[0][source] = floor;
+    game->map.planes[0][(size_t)first_y * MAP_SIDE + first_x] = floor;
+    game->map.planes[0][(size_t)final_y * MAP_SIDE + final_x] = wall;
+    game->map.planes[1][source] = 0;
+    ++game->secret_count;
+}
+
 static void use_adjacent_door(GameState *game)
 {
     const double direction_x = cos(game->player.angle);
@@ -172,6 +220,11 @@ static void use_adjacent_door(GameState *game)
     if (x < 0 || x >= MAP_SIDE || y < 0 || y >= MAP_SIDE)
         return;
     const size_t cell = (size_t)y * MAP_SIDE + x;
+    if (game->map.planes[1][cell] == 98) {
+        push_wall(game, x, y, x - (int)game->player.x,
+                  y - (int)game->player.y);
+        return;
+    }
     if (horizontal && game->map.planes[0][cell] == 21) {
         game->map.planes[0][cell] = 22;
         game->level_complete = 1;
@@ -350,7 +403,7 @@ static int drop_cell_free(const GameState *game, int x, int y)
     return 1;
 }
 
-static void place_clip(GameState *game, int x, int y)
+static void place_drop(GameState *game, int x, int y, StaticKind kind)
 {
     StaticObject *drop = NULL;
     for (size_t index = 0; index < game->static_count; ++index) {
@@ -364,21 +417,27 @@ static void place_clip(GameState *game, int x, int y)
             return;
         drop = &game->statics[game->static_count++];
     }
-    *drop = (StaticObject){(uint8_t)x, (uint8_t)y, 28, 1, STATIC_CLIP};
+    const uint8_t sprite = kind == STATIC_GOLD_KEY ? 22 :
+                           kind == STATIC_MACHINE_GUN ? 29 : 28;
+    *drop = (StaticObject){(uint8_t)x, (uint8_t)y, sprite, 1, kind};
 }
 
-static void drop_guard_clip(GameState *game, const Guard *guard)
+static void drop_enemy_item(GameState *game, const Guard *guard)
 {
+    const StaticKind kind = guard->kind == ENEMY_HANS ? STATIC_GOLD_KEY :
+                            guard->kind == ENEMY_SS &&
+                            !(game->weapons & (1u << WEAPON_MACHINE_GUN))
+                                ? STATIC_MACHINE_GUN : STATIC_CLIP;
     const int center_x = (int)guard->x;
     const int center_y = (int)guard->y;
     if (drop_cell_free(game, center_x, center_y)) {
-        place_clip(game, center_x, center_y);
+        place_drop(game, center_x, center_y, kind);
         return;
     }
     for (int y = center_y - 1; y <= center_y + 1; ++y) {
         for (int x = center_x - 1; x <= center_x + 1; ++x) {
             if (drop_cell_free(game, x, y)) {
-                place_clip(game, x, y);
+                place_drop(game, x, y, kind);
                 return;
             }
         }
@@ -435,9 +494,11 @@ static void player_attack(GameState *game)
         target->dead = 1;
         target->death_seconds = 0.0;
         if (target->kind != ENEMY_DOG)
-            drop_guard_clip(game, target);
+            drop_enemy_item(game, target);
         game->score += target->kind == ENEMY_OFFICER ? 400 :
-                       target->kind == ENEMY_DOG ? 200 : 100;
+                       target->kind == ENEMY_DOG ? 200 :
+                       target->kind == ENEMY_SS ? 500 :
+                       target->kind == ENEMY_HANS ? 5000 : 100;
     }
 }
 
@@ -489,6 +550,72 @@ static void guard_shoot(GameState *game, Guard *guard, double seconds)
                 game->damage_seconds = 0.15;
         }
         if (ticks >= 50.0) {
+            guard->shooting = 0;
+            guard->shoot_frame = 0;
+            guard->shoot_seconds = 0.0;
+        }
+        return;
+    }
+    if (guard->kind == ENEMY_SS) {
+        static const double shot_ticks[4] = {40.0, 60.0, 80.0, 100.0};
+        const double previous = guard->shoot_seconds * 70.0;
+        guard->shoot_seconds += seconds;
+        const double ticks = guard->shoot_seconds * 70.0;
+        guard->shoot_frame = ticks < 20.0 ? 0 :
+                             ((int)((ticks - 20.0) / 10.0) & 1) ? 2 : 1;
+        for (size_t shot = 0; shot < 4; ++shot) {
+            if (previous < shot_ticks[shot] && ticks >= shot_ticks[shot] &&
+                guard_sees_player(game, guard)) {
+                const double dx = fabs(game->player.x - guard->x);
+                const double dy = fabs(game->player.y - guard->y);
+                const int distance = (int)ceil(dx > dy ? dx : dy) * 2 / 3;
+                int chance = 256 - distance * 16;
+                if ((int)(game_random(game) & 0xffu) < chance) {
+                    const int divisor = distance < 2 ? 4 : distance < 4 ? 8 : 16;
+                    const int damage = 1 +
+                                       (int)(game_random(game) & 0xffu) / divisor;
+                    game->health -= damage;
+                    if (game->health <= 0)
+                        kill_player(game);
+                    game->damage_seconds = 0.15;
+                }
+            }
+        }
+        if (ticks >= 110.0) {
+            guard->shooting = 0;
+            guard->shoot_frame = 0;
+            guard->shoot_seconds = 0.0;
+        }
+        return;
+    }
+    if (guard->kind == ENEMY_HANS) {
+        static const double shot_ticks[6] = {
+            40.0, 50.0, 60.0, 70.0, 80.0, 90.0
+        };
+        const double previous = guard->shoot_seconds * 70.0;
+        guard->shoot_seconds += seconds;
+        const double ticks = guard->shoot_seconds * 70.0;
+        guard->shoot_frame = ticks < 30.0 || ticks >= 90.0 ? 0 :
+                             ((int)((ticks - 30.0) / 10.0) & 1) ? 2 : 1;
+        for (size_t shot = 0; shot < 6; ++shot) {
+            if (previous < shot_ticks[shot] && ticks >= shot_ticks[shot] &&
+                guard_sees_player(game, guard)) {
+                const double dx = fabs(game->player.x - guard->x);
+                const double dy = fabs(game->player.y - guard->y);
+                const int distance = (int)ceil(dx > dy ? dx : dy) * 2 / 3;
+                const int chance = 256 - distance * 16;
+                if ((int)(game_random(game) & 0xffu) < chance) {
+                    const int divisor = distance < 2 ? 4 : distance < 4 ? 8 : 16;
+                    const int damage = 1 +
+                                       (int)(game_random(game) & 0xffu) / divisor;
+                    game->health -= damage;
+                    if (game->health <= 0)
+                        kill_player(game);
+                    game->damage_seconds = 0.15;
+                }
+            }
+        }
+        if (ticks >= 100.0) {
             guard->shooting = 0;
             guard->shoot_frame = 0;
             guard->shoot_seconds = 0.0;
@@ -565,7 +692,8 @@ static void update_guards(GameState *game, double seconds)
             const double speed = guard->kind == ENEMY_DOG
                                      ? dog_patrol_speed * 2.0
                                      : guard_patrol_speed *
-                                           (guard->kind == ENEMY_OFFICER ? 5.0 : 3.0);
+                                           (guard->kind == ENEMY_OFFICER ? 5.0 :
+                                            guard->kind == ENEMY_SS ? 4.0 : 3.0);
             chase_player(game, guard,
                          speed * seconds);
         } else {
@@ -589,12 +717,11 @@ static void update_guards(GameState *game, double seconds)
                 guard->move_remaining -= movement;
         }
 
-        const double cycle = guard->kind == ENEMY_DOG && guard->alerted
-                                 ? 42.0 : 80.0;
+        const double cycle = guard->alerted ? 42.0 : 80.0;
         guard->animation_seconds = fmod(guard->animation_seconds + seconds,
                                         cycle / 70.0);
         const double ticks = guard->animation_seconds * 70.0;
-        if (guard->kind == ENEMY_DOG && guard->alerted)
+        if (guard->alerted)
             guard->frame = ticks < 13.0 ? 0 : ticks < 21.0 ? 1 :
                            ticks < 34.0 ? 2 : 3;
         else
@@ -634,11 +761,27 @@ void game_init(GameState *game, const WolfMap *map, uint32_t random_seed)
 
     for (size_t cell = 0; cell < MAP_CELLS; ++cell) {
         const uint16_t code = game->map.planes[1][cell];
+        if (code == 98) {
+            ++game->secret_total;
+            continue;
+        }
+        if (code == 214) {
+            Guard *guard = &game->guards[game->guard_count++];
+            guard->x = cell % MAP_SIDE + 0.5;
+            guard->y = cell / MAP_SIDE + 0.5;
+            guard->direction = 3;
+            guard->active = 1;
+            guard->kind = ENEMY_HANS;
+            guard->health = 950;
+            continue;
+        }
         if ((code >= 108 && code <= 123) ||
+            (code >= 126 && code <= 133) ||
             (code >= 134 && code <= 141)) {
             const int dog = code >= 134;
-            const int officer = !dog && code >= 116;
-            const uint16_t base = dog ? 134 : officer ? 116 : 108;
+            const int ss = code >= 126 && code <= 133;
+            const int officer = !dog && !ss && code >= 116;
+            const uint16_t base = dog ? 134 : ss ? 126 : officer ? 116 : 108;
             Guard *guard = &game->guards[game->guard_count++];
             guard->x = cell % MAP_SIDE + 0.5;
             guard->y = cell / MAP_SIDE + 0.5;
@@ -646,8 +789,8 @@ void game_init(GameState *game, const WolfMap *map, uint32_t random_seed)
             guard->patrol = code >= base + 4;
             guard->active = 1;
             guard->kind = dog ? ENEMY_DOG :
-                          officer ? ENEMY_OFFICER : ENEMY_GUARD;
-            guard->health = dog ? 1 : officer ? 50 : 25;
+                          ss ? ENEMY_SS : officer ? ENEMY_OFFICER : ENEMY_GUARD;
+            guard->health = dog ? 1 : ss ? 100 : officer ? 50 : 25;
             continue;
         }
         if (code < 23 || code > 70)
