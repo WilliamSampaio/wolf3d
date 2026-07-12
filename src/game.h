@@ -100,6 +100,7 @@ typedef struct {
 } GameState;
 
 void game_init(GameState *game, const WolfMap *map, uint32_t random_seed);
+void game_next_level(GameState *game, const WolfMap *map, uint32_t random_seed);
 void game_update(GameState *game, const PlayerCommand *command, double seconds);
 uint32_t game_random(GameState *game);
 

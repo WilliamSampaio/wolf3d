@@ -537,11 +537,31 @@ Critérios de aceitação do M5Q:
 2. [x] interação vertical, distante ou bloqueada pela orientação não conclui;
 3. [x] interruptor muda de 21 para 22 no mapa renderizado;
 4. [x] jogador, guardas e portas não atualizam após a conclusão;
-5. [ ] elevador é validado visualmente no primeiro mapa shareware;
+5. [x] elevador é validado visualmente no primeiro mapa shareware;
 6. [x] build, testes e smoke checks continuam passando.
 
 Tela de resultados, bônus, nível secreto, carregamento do próximo mapa e campanha
 permanecem fora do M5Q.
+
+### M5R — contrato de progressão entre mapas
+
+- carregar o próximo índice de mapa após conclusão pelo elevador;
+- preservar vida, munição, armas, arma selecionada, vidas e pontuação;
+- reiniciar jogador, guardas, portas, objetos, chaves e contadores do nível;
+- usar uma semente determinística própria para cada índice;
+- encerrar com erro claro se o próximo mapa não puder ser carregado.
+
+Critérios de aceitação do M5R:
+
+1. [x] transição preserva somente o estado de campanha definido;
+2. [x] novo mapa recria integralmente seu estado local;
+3. [x] executável carrega o mapa seguinte ao usar o elevador;
+4. [x] falha de carregamento não mantém uma simulação parcialmente reiniciada;
+5. [ ] transição do primeiro para o segundo mapa WL1 é validada manualmente;
+6. [x] build, testes e smoke checks continuam passando.
+
+Tela de resultados, bônus de tempo/tesouro, nível secreto, seleção de episódio,
+save e campanha WL6 permanecem fora do M5R.
 
 ## Regra de documentação
 

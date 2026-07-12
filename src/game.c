@@ -610,6 +610,23 @@ void game_init(GameState *game, const WolfMap *map, uint32_t random_seed)
     }
 }
 
+void game_next_level(GameState *game, const WolfMap *map, uint32_t random_seed)
+{
+    const int health = game->health;
+    const int ammo = game->ammo;
+    const int lives = game->lives;
+    const int score = game->score;
+    const unsigned int weapons = game->weapons;
+    const int current_weapon = game->current_weapon;
+    game_init(game, map, random_seed);
+    game->health = health;
+    game->ammo = ammo;
+    game->lives = lives;
+    game->score = score;
+    game->weapons = weapons;
+    game->current_weapon = current_weapon;
+}
+
 void game_update(GameState *game, const PlayerCommand *command, double seconds)
 {
     if (seconds < 0.0)

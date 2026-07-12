@@ -481,6 +481,32 @@ int main(void)
     elevator_game.player.angle = -1.5707963267948966;
     game_update(&elevator_game, &use, 0.0);
     assert(!elevator_game.level_complete);
+
+    WolfMap next_map = open_map();
+    next_map.player_x = 8;
+    next_map.player_y = 9;
+    next_map.planes[0][9 * MAP_SIDE + 10] = 90;
+    next_map.planes[1][9 * MAP_SIDE + 11] = 108;
+    elevator_game.health = 63;
+    elevator_game.ammo = 17;
+    elevator_game.lives = 2;
+    elevator_game.score = 1234;
+    elevator_game.weapons |= 1u << WEAPON_MACHINE_GUN;
+    elevator_game.current_weapon = WEAPON_MACHINE_GUN;
+    elevator_game.keys = 3;
+    elevator_game.treasure_count = 4;
+    elevator_game.player_dead = 1;
+    elevator_game.level_complete = 1;
+    game_next_level(&elevator_game, &next_map, 2);
+    assert(elevator_game.health == 63 && elevator_game.ammo == 17 &&
+           elevator_game.lives == 2 && elevator_game.score == 1234);
+    assert(elevator_game.current_weapon == WEAPON_MACHINE_GUN &&
+           (elevator_game.weapons & (1u << WEAPON_MACHINE_GUN)));
+    assert(elevator_game.player.x == 8.5 && elevator_game.player.y == 9.5 &&
+           elevator_game.guard_count == 1 && elevator_game.door_count == 1);
+    assert(elevator_game.keys == 0 && elevator_game.treasure_count == 0 &&
+           !elevator_game.player_dead && !elevator_game.level_complete &&
+           elevator_game.random_state == 2);
     puts("GAME OK");
     return 0;
 }

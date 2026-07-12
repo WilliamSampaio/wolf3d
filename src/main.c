@@ -17,6 +17,8 @@ int main(int argc, char **argv)
     int check_only = 0;
     const char *data_directory = NULL;
     const char *edition = NULL;
+    char error[512];
+    int map_index = 0;
     VSwap vswap = {0};
     GameState game;
 
@@ -36,7 +38,6 @@ int main(int argc, char **argv)
         return 2;
     }
     if (data_directory) {
-        char error[512];
         edition = data_validate(data_directory, error, sizeof(error));
         if (!edition) {
             fprintf(stderr, "%s\n", error);
@@ -165,6 +166,20 @@ int main(int argc, char **argv)
             .requested_weapon = requested_weapon
         };
         game_update(&game, &command, seconds);
+        if (game.level_complete) {
+            WolfMap map;
+            const int next_map = map_index + 1;
+            if (!map_load(data_directory, edition, next_map, &map,
+                          error, sizeof(error))) {
+                fprintf(stderr, "%s\n", error);
+                running = 0;
+                continue;
+            }
+            map_index = next_map;
+            game_next_level(&game, &map, (uint32_t)map_index + 1);
+            printf("Mapa %d '%s' OK; jogador em %d,%d\n", map_index,
+                   map.name, map.player_x, map.player_y);
+        }
         render_scene(pixels, &game, &vswap);
         SDL_UpdateTexture(texture, NULL, pixels,
                           RENDER_WIDTH * (int)sizeof(*pixels));
