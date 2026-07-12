@@ -9,6 +9,7 @@ static const double door_travel_seconds = 65535.0 / (1024.0 * 70.0);
 static const double door_hold_seconds = 300.0 / 70.0;
 static const double player_radius = 0.2;
 static const double guard_patrol_speed = 512.0 * 70.0 / 65536.0;
+static const double dog_patrol_speed = 1500.0 * 70.0 / 65536.0;
 static const int guard_direction_x[4] = {1, 0, -1, 0};
 static const int guard_direction_y[4] = {0, -1, 0, 1};
 
@@ -433,8 +434,10 @@ static void player_attack(GameState *game)
     if (target->health <= 0) {
         target->dead = 1;
         target->death_seconds = 0.0;
-        drop_guard_clip(game, target);
-        game->score += target->kind == ENEMY_OFFICER ? 400 : 100;
+        if (target->kind != ENEMY_DOG)
+            drop_guard_clip(game, target);
+        game->score += target->kind == ENEMY_OFFICER ? 400 :
+                       target->kind == ENEMY_DOG ? 200 : 100;
     }
 }
 
@@ -467,6 +470,31 @@ static void kill_player(GameState *game)
 
 static void guard_shoot(GameState *game, Guard *guard, double seconds)
 {
+    if (guard->kind == ENEMY_DOG) {
+        const double previous = guard->shoot_seconds;
+        guard->shoot_seconds += seconds;
+        const double ticks = guard->shoot_seconds * 70.0;
+        guard->shoot_frame = ticks < 10.0 ? 0 : ticks < 20.0 ? 1 :
+                             ticks < 30.0 ? 2 : ticks < 40.0 ? 0 : 3;
+        if (previous < 20.0 / 70.0 &&
+            guard->shoot_seconds >= 20.0 / 70.0 &&
+            fabs(game->player.x - guard->x) <= 2.0 &&
+            fabs(game->player.y - guard->y) <= 2.0 &&
+            (game_random(game) & 0xffu) < 180u) {
+            const int damage = (int)(game_random(game) & 0xffu) / 16;
+            game->health -= damage;
+            if (game->health <= 0)
+                kill_player(game);
+            if (damage)
+                game->damage_seconds = 0.15;
+        }
+        if (ticks >= 50.0) {
+            guard->shooting = 0;
+            guard->shoot_frame = 0;
+            guard->shoot_seconds = 0.0;
+        }
+        return;
+    }
     const double first_end = guard->kind == ENEMY_OFFICER ? 6.0 : 20.0;
     const double shot_time = guard->kind == ENEMY_OFFICER ? 26.0 : 40.0;
     const double total_time = guard->kind == ENEMY_OFFICER ? 36.0 : 60.0;
@@ -521,7 +549,11 @@ static void update_guards(GameState *game, double seconds)
 
         const double player_x = game->player.x - guard->x;
         const double player_y = game->player.y - guard->y;
-        if (guard->alerted && player_x * player_x + player_y * player_y <= 16.0 &&
+        const int attack_range = guard->kind == ENEMY_DOG
+                                     ? fabs(player_x) <= 1.0 &&
+                                       fabs(player_y) <= 1.0
+                                     : player_x * player_x + player_y * player_y <= 16.0;
+        if (guard->alerted && attack_range &&
             guard_sees_player(game, guard)) {
             guard->shooting = 1;
             guard->shoot_seconds = 0.0;
@@ -530,9 +562,12 @@ static void update_guards(GameState *game, double seconds)
         }
 
         if (guard->alerted) {
-            const double multiplier = guard->kind == ENEMY_OFFICER ? 5.0 : 3.0;
+            const double speed = guard->kind == ENEMY_DOG
+                                     ? dog_patrol_speed * 2.0
+                                     : guard_patrol_speed *
+                                           (guard->kind == ENEMY_OFFICER ? 5.0 : 3.0);
             chase_player(game, guard,
-                         guard_patrol_speed * multiplier * seconds);
+                         speed * seconds);
         } else {
             if (guard->move_remaining <= 0.0) {
                 guard->x = floor(guard->x) + 0.5;
@@ -545,18 +580,26 @@ static void update_guards(GameState *game, double seconds)
                     guard->direction = (arrow - 90) / 2;
                 guard->move_remaining = 1.0;
             }
-            const double distance = guard_patrol_speed * seconds;
+            const double distance = (guard->kind == ENEMY_DOG
+                                         ? dog_patrol_speed : guard_patrol_speed) *
+                                    seconds;
             const double movement = distance < guard->move_remaining
                                         ? distance : guard->move_remaining;
             if (move_guard(game, guard, guard->direction, movement))
                 guard->move_remaining -= movement;
         }
 
+        const double cycle = guard->kind == ENEMY_DOG && guard->alerted
+                                 ? 42.0 : 80.0;
         guard->animation_seconds = fmod(guard->animation_seconds + seconds,
-                                        80.0 / 70.0);
+                                        cycle / 70.0);
         const double ticks = guard->animation_seconds * 70.0;
-        guard->frame = ticks < 25.0 ? 0 : ticks < 40.0 ? 1 :
-                       ticks < 65.0 ? 2 : 3;
+        if (guard->kind == ENEMY_DOG && guard->alerted)
+            guard->frame = ticks < 13.0 ? 0 : ticks < 21.0 ? 1 :
+                           ticks < 34.0 ? 2 : 3;
+        else
+            guard->frame = ticks < 25.0 ? 0 : ticks < 40.0 ? 1 :
+                           ticks < 65.0 ? 2 : 3;
     }
 }
 
@@ -591,17 +634,20 @@ void game_init(GameState *game, const WolfMap *map, uint32_t random_seed)
 
     for (size_t cell = 0; cell < MAP_CELLS; ++cell) {
         const uint16_t code = game->map.planes[1][cell];
-        if (code >= 108 && code <= 123) {
-            const int officer = code >= 116;
-            const uint16_t base = officer ? 116 : 108;
+        if ((code >= 108 && code <= 123) ||
+            (code >= 134 && code <= 141)) {
+            const int dog = code >= 134;
+            const int officer = !dog && code >= 116;
+            const uint16_t base = dog ? 134 : officer ? 116 : 108;
             Guard *guard = &game->guards[game->guard_count++];
             guard->x = cell % MAP_SIDE + 0.5;
             guard->y = cell / MAP_SIDE + 0.5;
             guard->direction = (code - base) % 4;
             guard->patrol = code >= base + 4;
             guard->active = 1;
-            guard->kind = officer ? ENEMY_OFFICER : ENEMY_GUARD;
-            guard->health = officer ? 50 : 25;
+            guard->kind = dog ? ENEMY_DOG :
+                          officer ? ENEMY_OFFICER : ENEMY_GUARD;
+            guard->health = dog ? 1 : officer ? 50 : 25;
             continue;
         }
         if (code < 23 || code > 70)

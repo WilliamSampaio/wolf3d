@@ -48,6 +48,7 @@ núcleo portátil está funcional.
 - interruptor do elevador conclui o nível atual;
 - elevador carrega o mapa seguinte preservando o estado da campanha;
 - oficiais usam sprites, resistência, velocidade e pontuação próprias;
+- cães patrulham, perseguem, mordem e usam animações próprias;
 - código histórico preservado em `WOLFSRC/`.
 
 O primeiro mapa pode ser explorado com teclado e mouse. Portas abrem com `Space`,

@@ -103,6 +103,18 @@ int main(void)
         assert(blocked.guards[type].health == 50);
     }
 
+    WolfMap dogs = open_map();
+    for (int type = 0; type < 8; ++type)
+        dogs.planes[1][6 * MAP_SIDE + type + 1] = 134 + type;
+    game_init(&blocked, &dogs, 1);
+    assert(blocked.guard_count == 8);
+    for (int type = 0; type < 8; ++type) {
+        assert(blocked.guards[type].kind == ENEMY_DOG);
+        assert(blocked.guards[type].direction == type % 4);
+        assert(blocked.guards[type].patrol == (type >= 4));
+        assert(blocked.guards[type].health == 1);
+    }
+
     WolfMap patrol_map = open_map();
     patrol_map.planes[1][4 * MAP_SIDE + 2] = 112;
     GameState patrol;
@@ -317,34 +329,55 @@ int main(void)
     WolfMap officer_chase_map = open_map();
     guard_chase_map.planes[1][2 * MAP_SIDE + 7] = 110;
     officer_chase_map.planes[1][2 * MAP_SIDE + 7] = 118;
-    GameState guard_chase, officer_chase;
-    game_init(&guard_chase, &guard_chase_map, 1);
-    game_init(&officer_chase, &officer_chase_map, 1);
-    game_update(&guard_chase, &(PlayerCommand){0}, 0.05);
-    game_update(&officer_chase, &(PlayerCommand){0}, 0.05);
-    assert(officer_chase.guards[0].x < guard_chase.guards[0].x);
+    game_init(&first, &guard_chase_map, 1);
+    game_init(&second, &officer_chase_map, 1);
+    game_update(&first, &(PlayerCommand){0}, 0.05);
+    game_update(&second, &(PlayerCommand){0}, 0.05);
+    assert(second.guards[0].x < first.guards[0].x);
+
+    WolfMap dog_chase_map = open_map();
+    dog_chase_map.planes[1][2 * MAP_SIDE + 7] = 136;
+    game_init(&blocked, &dog_chase_map, 1);
+    game_update(&blocked, &(PlayerCommand){0}, 0.05);
+    assert(blocked.guards[0].x < second.guards[0].x);
+
+    WolfMap dog_attack_map = open_map();
+    dog_attack_map.planes[1][2 * MAP_SIDE + 3] = 136;
+    game_init(&blocked, &dog_attack_map, 1234);
+    game_update(&blocked, &(PlayerCommand){0}, 0.05);
+    assert(blocked.guards[0].shooting);
+    for (int step = 0; step < 6; ++step)
+        game_update(&blocked, &(PlayerCommand){0}, 0.05);
+    assert(blocked.health < 100 && blocked.guards[0].shoot_frame == 2);
+    for (int step = 0; step < 9; ++step)
+        game_update(&blocked, &(PlayerCommand){0}, 0.05);
+    assert(!blocked.guards[0].shooting);
+
+    game_init(&blocked, &dog_attack_map, 1);
+    game_update(&blocked, &(PlayerCommand){.attack_pressed = 1}, 0.0);
+    assert(blocked.guards[0].dead && blocked.score == 200 &&
+           blocked.static_count == 0);
 
     WolfMap officer_attack_map = open_map();
     officer_attack_map.planes[1][2 * MAP_SIDE + 4] = 118;
-    game_init(&officer_chase, &officer_attack_map, 1);
-    game_update(&officer_chase, &(PlayerCommand){0}, 0.05);
-    assert(officer_chase.guards[0].shooting);
+    game_init(&second, &officer_attack_map, 1);
+    game_update(&second, &(PlayerCommand){0}, 0.05);
+    assert(second.guards[0].shooting);
     for (int step = 0; step < 8; ++step)
-        game_update(&officer_chase, &(PlayerCommand){0}, 0.05);
-    assert(officer_chase.health < 100 &&
-           officer_chase.guards[0].shoot_frame == 2);
+        game_update(&second, &(PlayerCommand){0}, 0.05);
+    assert(second.health < 100 && second.guards[0].shoot_frame == 2);
     for (int step = 0; step < 3; ++step)
-        game_update(&officer_chase, &(PlayerCommand){0}, 0.05);
-    assert(!officer_chase.guards[0].shooting);
+        game_update(&second, &(PlayerCommand){0}, 0.05);
+    assert(!second.guards[0].shooting);
 
     WolfMap officer_combat_map = open_map();
     officer_combat_map.planes[1][2 * MAP_SIDE + 3] = 116;
-    game_init(&officer_chase, &officer_combat_map, 1);
-    officer_chase.guards[0].health = 1;
-    game_update(&officer_chase, &(PlayerCommand){.attack_pressed = 1}, 0.0);
-    assert(officer_chase.guards[0].dead && officer_chase.score == 400 &&
-           officer_chase.static_count == 1 &&
-           officer_chase.statics[0].kind == STATIC_CLIP);
+    game_init(&second, &officer_combat_map, 1);
+    second.guards[0].health = 1;
+    game_update(&second, &(PlayerCommand){.attack_pressed = 1}, 0.0);
+    assert(second.guards[0].dead && second.score == 400 &&
+           second.static_count == 1 &&
+           second.statics[0].kind == STATIC_CLIP);
 
     WolfMap combat_map = open_map();
     combat_map.planes[1][2 * MAP_SIDE + 4] = 110;

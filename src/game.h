@@ -46,7 +46,8 @@ typedef struct {
 
 typedef enum {
     ENEMY_GUARD,
-    ENEMY_OFFICER
+    ENEMY_OFFICER,
+    ENEMY_DOG
 } EnemyKind;
 
 typedef struct {

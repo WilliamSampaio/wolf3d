@@ -55,6 +55,12 @@ int main(void)
         memset(sprites[index].mask, 1, sizeof(sprites[index].mask));
         sprites[index].right = WALL_SIZE - 1;
     }
+    for (int index = 99; index < 138; ++index) {
+        memset(sprites[index].pixels, 90 + (index - 99) % 40,
+               sizeof(sprites[index].pixels));
+        memset(sprites[index].mask, 1, sizeof(sprites[index].mask));
+        sprites[index].right = WALL_SIZE - 1;
+    }
     for (int index = 238; index < 288; ++index) {
         memset(sprites[index].pixels, 30 + (index - 238) % 60,
                sizeof(sprites[index].pixels));
@@ -121,6 +127,22 @@ int main(void)
                                    RENDER_WIDTH / 2]);
     game.guards[0].dead = 0;
     game.guards[0].death_seconds = 0.0;
+    game.guards[0].kind = ENEMY_DOG;
+    render_scene(pixels, &game, &vswap);
+    const uint32_t dog = pixels[(RENDER_HEIGHT / 2) * RENDER_WIDTH +
+                                RENDER_WIDTH / 2];
+    assert(dog != officer);
+    game.guards[0].shooting = 1;
+    render_scene(pixels, &game, &vswap);
+    const uint32_t dog_jump = pixels[(RENDER_HEIGHT / 2) * RENDER_WIDTH +
+                                     RENDER_WIDTH / 2];
+    assert(dog_jump != dog);
+    game.guards[0].shooting = 0;
+    game.guards[0].dead = 1;
+    render_scene(pixels, &game, &vswap);
+    assert(dog_jump != pixels[(RENDER_HEIGHT / 2) * RENDER_WIDTH +
+                              RENDER_WIDTH / 2]);
+    game.guards[0].dead = 0;
     game.guards[0].kind = ENEMY_GUARD;
     game.map.planes[0][2 * MAP_SIDE + 3] = 1;
     render_scene(pixels, &game, &vswap);

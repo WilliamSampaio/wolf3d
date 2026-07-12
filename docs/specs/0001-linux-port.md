@@ -576,11 +576,32 @@ Critérios de aceitação do M5S:
 2. [x] oficiais usam todos os sprites direcionais, tiro, morte e cadáver próprios;
 3. [x] vida, velocidade, tempos e pontuação diferem dos guardas como no original;
 4. [x] oficiais mortos param, pontuam e deixam munição coletável;
-5. [ ] oficiais são validados visualmente nos mapas shareware;
+5. [x] oficiais são validados visualmente nos mapas shareware;
 6. [x] build, testes e smoke checks continuam passando.
 
 Overlays de dificuldade, cães, SS, mutantes, chefes, sons e comportamento de dor
 permanecem fora do M5S.
+
+### M5T — contrato dos cães
+
+- instanciar cães parados e em patrulha pelos códigos 134–141;
+- reutilizar percepção, caminhos, portas e colisão dos demais atores;
+- aplicar sprites próprios, 1 ponto de vida, velocidade `SPDDOG` e 200 pontos;
+- perseguir a 2× a velocidade própria e atacar somente em curta distância;
+- executar a sequência de salto/mordida e morte nos tempos originais;
+- não criar drop de munição ao morrer.
+
+Critérios de aceitação do M5T:
+
+1. [x] os oito códigos criam cães com direção e patrulha corretas;
+2. [x] patrulha, perseguição e animações usam velocidades e tempos próprios;
+3. [x] mordida resolve uma vez, por alcance, chance e dano determinísticos;
+4. [x] cães mortos valem 200 pontos, não deixam drop e exibem cadáver próprio;
+5. [ ] cães são validados visualmente nos mapas shareware;
+6. [x] build, testes e smoke checks continuam passando.
+
+Overlays de dificuldade, SS, mutantes, chefes, sons e comportamento diagonal
+permanecem fora do M5T.
 
 ## Regra de documentação
 
