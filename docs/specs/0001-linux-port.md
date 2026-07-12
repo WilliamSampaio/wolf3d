@@ -437,11 +437,30 @@ Critérios de aceitação do M5L:
 2. [x] a visão escurece até preto em um segundo;
 3. [x] `Space` reinicia mapa, jogador, guardas, portas e inventário inicial;
 4. [x] cada reinício consome uma vida e zero vidas impede novo reinício;
-5. [ ] morte e reinício são validados no primeiro mapa shareware;
+5. [x] morte e reinício são validados no primeiro mapa shareware;
 6. [x] build, testes e smoke checks continuam passando.
 
 Tela de game over, ranking, checkpoints, menus, áudio e animação de queda
 permanecem fora do M5L.
+
+### M5M — contrato do drop de munição dos guardas
+
+- criar um pente de munição quando um guarda morrer;
+- usar a célula da morte ou a primeira célula livre adjacente;
+- reutilizar o estado e a renderização existentes de objetos estáticos;
+- permitir a coleta normal, respeitando o limite de 99 munições.
+
+Critérios de aceitação do M5M:
+
+1. [x] cada guarda morto cria exatamente um pente ativo;
+2. [x] célula ocupada desloca o drop para uma vizinha livre;
+3. [x] coleta adiciona munição e remove o pente do cenário;
+4. [x] nenhum drop é criado quando não existir célula ou slot seguro;
+5. [ ] drop é validado visualmente no primeiro mapa shareware;
+6. [x] build, testes e smoke checks continuam passando.
+
+Outros drops, tabelas de loot, armas inimigas, inventário visual e áudio
+permanecem fora do M5M.
 
 ## Regra de documentação
 

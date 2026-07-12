@@ -285,10 +285,35 @@ int main(void)
     const double death_x = shot_a.guards[0].x;
     game_update(&shot_a, &attack, 0.05);
     assert(shot_a.guards[0].dead && shot_a.score == 100);
+    assert(shot_a.static_count == 1 && shot_a.statics[0].active &&
+           shot_a.statics[0].kind == STATIC_CLIP &&
+           shot_a.statics[0].x == 4 && shot_a.statics[0].y == 2);
+    shot_a.guards[1].active = 0;
+    shot_a.player.x = 4.5;
+    shot_a.player.y = 2.5;
+    shot_a.ammo = 0;
+    game_update(&shot_a, &(PlayerCommand){0}, 0.0);
+    assert(shot_a.ammo == 8 && !shot_a.statics[0].active);
     for (int step = 0; step < 20; ++step)
         game_update(&shot_a, &(PlayerCommand){0}, 0.05);
     assert(shot_a.guards[0].x == death_x &&
            shot_a.guards[0].death_seconds > 0.5);
+
+    game_init(&shot_a, &combat_map, 1);
+    shot_a.static_count = 1;
+    shot_a.statics[0] = (StaticObject){4, 2, 2, 1, STATIC_DECORATION};
+    shot_a.guards[0].health = 1;
+    game_update(&shot_a, &attack, 0.0);
+    assert(shot_a.static_count == 2 &&
+           (shot_a.statics[1].x != 4 || shot_a.statics[1].y != 2));
+
+    game_init(&shot_a, &combat_map, 1);
+    shot_a.static_count = MAP_CELLS;
+    for (size_t index = 0; index < MAP_CELLS; ++index)
+        shot_a.statics[index] = (StaticObject){0, 0, 2, 1, STATIC_DECORATION};
+    shot_a.guards[0].health = 1;
+    game_update(&shot_a, &attack, 0.0);
+    assert(shot_a.static_count == MAP_CELLS);
 
     GameState pickup = game_with_object(47);
     pickup.health = 90;

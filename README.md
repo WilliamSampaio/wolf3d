@@ -38,6 +38,7 @@ portável estiver funcional.
 - pistola inicial exibida em primeira pessoa com animação de disparo;
 - guardas próximos atiram e causam dano com feedback visual;
 - morte escurece a tela e permite reiniciar o mapa consumindo uma vida;
+- guardas mortos deixam pentes de munição coletáveis;
 - código histórico preservado em `WOLFSRC/`.
 
 O primeiro mapa pode ser explorado com teclado e mouse. Portas abrem com `Space`,

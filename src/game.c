@@ -325,6 +325,58 @@ static void chase_player(GameState *game, Guard *guard, double distance)
         start_guard_move(game, guard, second, distance);
 }
 
+static int drop_cell_free(const GameState *game, int x, int y)
+{
+    if (x < 0 || x >= MAP_SIDE || y < 0 || y >= MAP_SIDE)
+        return 0;
+    const size_t cell = (size_t)y * MAP_SIDE + x;
+    if (game->blocked[cell] || game->door_at[cell] >= 0)
+        return 0;
+    const uint16_t tile = game->map.planes[0][cell];
+    if (tile && tile < 107)
+        return 0;
+    for (size_t index = 0; index < game->static_count; ++index)
+        if (game->statics[index].active && game->statics[index].x == x &&
+            game->statics[index].y == y)
+            return 0;
+    return 1;
+}
+
+static void place_clip(GameState *game, int x, int y)
+{
+    StaticObject *drop = NULL;
+    for (size_t index = 0; index < game->static_count; ++index) {
+        if (!game->statics[index].active) {
+            drop = &game->statics[index];
+            break;
+        }
+    }
+    if (!drop) {
+        if (game->static_count == MAP_CELLS)
+            return;
+        drop = &game->statics[game->static_count++];
+    }
+    *drop = (StaticObject){(uint8_t)x, (uint8_t)y, 28, 1, STATIC_CLIP};
+}
+
+static void drop_guard_clip(GameState *game, const Guard *guard)
+{
+    const int center_x = (int)guard->x;
+    const int center_y = (int)guard->y;
+    if (drop_cell_free(game, center_x, center_y)) {
+        place_clip(game, center_x, center_y);
+        return;
+    }
+    for (int y = center_y - 1; y <= center_y + 1; ++y) {
+        for (int x = center_x - 1; x <= center_x + 1; ++x) {
+            if (drop_cell_free(game, x, y)) {
+                place_clip(game, x, y);
+                return;
+            }
+        }
+    }
+}
+
 static void player_attack(GameState *game)
 {
     if (game->current_weapon == WEAPON_KNIFE || game->ammo <= 0)
@@ -370,6 +422,7 @@ static void player_attack(GameState *game)
     if (target->health <= 0) {
         target->dead = 1;
         target->death_seconds = 0.0;
+        drop_guard_clip(game, target);
         game->score += 100;
     }
 }
