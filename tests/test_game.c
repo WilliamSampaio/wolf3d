@@ -245,6 +245,32 @@ int main(void)
         assert(patrol.doors[0].action == DOOR_CLOSED);
     }
 
+    GameState weapon_test;
+    game_init(&weapon_test, &map, 1);
+    game_update(&weapon_test, &(PlayerCommand){.requested_weapon = 3}, 0.0);
+    assert(weapon_test.current_weapon == WEAPON_PISTOL);
+    weapon_test.weapons |= 1u << WEAPON_MACHINE_GUN;
+    game_update(&weapon_test, &(PlayerCommand){.requested_weapon = 3}, 0.0);
+    assert(weapon_test.current_weapon == WEAPON_MACHINE_GUN);
+    game_update(&weapon_test, &(PlayerCommand){.attack_held = 1}, 0.0);
+    assert(weapon_test.ammo == 7 && weapon_test.weapon_frame == 1);
+    for (int step = 0; step < 7; ++step)
+        game_update(&weapon_test, &(PlayerCommand){.attack_held = 1}, 0.05);
+    assert(weapon_test.ammo == 7 && weapon_test.weapon_frame == 0);
+    game_update(&weapon_test, &(PlayerCommand){.attack_held = 1}, 0.0);
+    assert(weapon_test.ammo == 6);
+    weapon_test.ammo = 0;
+    weapon_test.weapon_frame = 0;
+    game_update(&weapon_test, &(PlayerCommand){.attack_held = 1}, 0.0);
+    assert(weapon_test.weapon_frame == 0);
+
+    game_init(&weapon_test, &map, 1);
+    game_update(&weapon_test,
+                &(PlayerCommand){.attack_pressed = 1, .attack_held = 1}, 0.0);
+    for (int step = 0; step < 8; ++step)
+        game_update(&weapon_test, &(PlayerCommand){.attack_held = 1}, 0.05);
+    assert(weapon_test.ammo == 7 && weapon_test.weapon_frame == 0);
+
     WolfMap combat_map = open_map();
     combat_map.planes[1][2 * MAP_SIDE + 4] = 110;
     GameState shot_a, shot_b;

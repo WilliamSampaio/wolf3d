@@ -71,7 +71,8 @@ cmake --build build
 
 Controles: `W`/`↑` avança, `S`/`↓` recua, `A`/`←` e `D`/`→` giram, o mouse
 controla a direção horizontal, `Space` opera a porta à frente, `Ctrl` ou botão
-esquerdo dispara e `Esc` encerra.
+esquerdo dispara, `1–4` seleciona armas e `Esc` encerra. Metralhadora e chaingun
+disparam continuamente enquanto o controle permanece pressionado.
 Após morrer, `Space` reinicia o mapa enquanto ainda houver vidas.
 
 Verificação rápida:

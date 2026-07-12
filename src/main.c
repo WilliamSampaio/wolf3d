@@ -126,6 +126,7 @@ int main(int argc, char **argv)
         int mouse_x = 0;
         int use_pressed = 0;
         int attack_pressed = 0;
+        int requested_weapon = 0;
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_MOUSEMOTION)
                 mouse_x += event.motion.xrel;
@@ -138,6 +139,9 @@ int main(int argc, char **argv)
                 (event.type == SDL_MOUSEBUTTONDOWN &&
                  event.button.button == SDL_BUTTON_LEFT))
                 attack_pressed = 1;
+            if (event.type == SDL_KEYDOWN && !event.key.repeat &&
+                event.key.keysym.sym >= SDLK_1 && event.key.keysym.sym <= SDLK_4)
+                requested_weapon = event.key.keysym.sym - SDLK_1 + 1;
             if (event.type == SDL_QUIT ||
                 (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE))
                 running = 0;
@@ -147,6 +151,7 @@ int main(int argc, char **argv)
         const double seconds = (now - previous) / frequency;
         previous = now;
         const uint8_t *keys = SDL_GetKeyboardState(NULL);
+        const Uint32 mouse_buttons = SDL_GetMouseState(NULL, NULL);
         const PlayerCommand command = {
             .forward = (keys[SDL_SCANCODE_W] || keys[SDL_SCANCODE_UP]) -
                        (keys[SDL_SCANCODE_S] || keys[SDL_SCANCODE_DOWN]),
@@ -154,7 +159,10 @@ int main(int argc, char **argv)
                     (keys[SDL_SCANCODE_A] || keys[SDL_SCANCODE_LEFT]),
             .look_radians = mouse_x * 0.0025,
             .use_pressed = use_pressed,
-            .attack_pressed = attack_pressed
+            .attack_pressed = attack_pressed,
+            .attack_held = keys[SDL_SCANCODE_LCTRL] || keys[SDL_SCANCODE_RCTRL] ||
+                           (mouse_buttons & SDL_BUTTON(SDL_BUTTON_LEFT)),
+            .requested_weapon = requested_weapon
         };
         game_update(&game, &command, seconds);
         render_scene(pixels, &game, &vswap);

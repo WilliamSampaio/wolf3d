@@ -617,9 +617,18 @@ void game_update(GameState *game, const PlayerCommand *command, double seconds)
         return;
     }
     player_rotate(&game->player, command->look_radians);
+    if (!game->weapon_frame && command->requested_weapon >= 1 &&
+        command->requested_weapon <= 4) {
+        const int weapon = command->requested_weapon - 1;
+        if (game->weapons & (1u << weapon))
+            game->current_weapon = weapon;
+    }
     if (command->use_pressed)
         use_adjacent_door(game);
-    if (command->attack_pressed && !game->weapon_frame)
+    const int automatic = game->current_weapon == WEAPON_MACHINE_GUN ||
+                          game->current_weapon == WEAPON_CHAIN_GUN;
+    if (!game->weapon_frame &&
+        (command->attack_pressed || (automatic && command->attack_held)))
         player_attack(game);
     update_weapon(game, seconds);
     if (game->damage_seconds > 0.0) {

@@ -475,11 +475,31 @@ Critérios de aceitação do M5N:
 2. [x] alterações no `GameState` produzem pixels diferentes nos valores;
 3. [x] arma e HUD não se sobrepõem;
 4. [x] flash de dano e fade de morte continuam afetando a tela completa;
-5. [ ] HUD é validado visualmente no primeiro mapa shareware;
+5. [x] HUD é validado visualmente no primeiro mapa shareware;
 6. [x] build, testes e smoke checks continuam passando.
 
 Face animada, chaves, arma selecionada, contador de tesouros, fonte do
 `VGAGRAPH` e status bar histórico permanecem fora do M5N.
+
+### M5O — contrato de seleção e disparo automático
+
+- selecionar faca, pistola, metralhadora e chaingun pelas teclas `1–4`;
+- aceitar a troca somente quando a arma pertencer ao jogador;
+- manter pistola por borda de pressão;
+- repetir disparos de metralhadora e chaingun enquanto o controle estiver pressionado;
+- interromper repetição ao soltar o controle ou acabar a munição.
+
+Critérios de aceitação do M5O:
+
+1. [x] seleção troca apenas para armas possuídas;
+2. [x] pistola não repete disparos por pressão contínua;
+3. [x] armas automáticas repetem após cada ciclo de animação;
+4. [x] munição vazia encerra o disparo automático;
+5. [ ] troca e repetição são validadas no primeiro mapa shareware;
+6. [x] build, testes e smoke checks continuam passando.
+
+Ataque da faca, cadências diferentes por arma, troca automática sem munição e
+animações fiéis específicas permanecem fora do M5O.
 
 ## Regra de documentação
 
