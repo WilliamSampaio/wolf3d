@@ -22,6 +22,10 @@ cmake --build build       # Compile the Linux executable
 ctest --test-dir build --output-on-failure # Run portable logic tests
 ```
 
+On Windows, use Visual Studio 2022 x64 with SDL2 from vcpkg and configure CMake
+with `-DCMAKE_TOOLCHAIN_FILE=<vcpkg>/scripts/buildsystems/vcpkg.cmake`; build and
+test with the `Release` configuration as documented in `README.md`.
+
 Before submitting, also run `git diff --check` to catch whitespace errors. Do not commit anything under `build/`.
 
 ## Coding Style & Naming Conventions

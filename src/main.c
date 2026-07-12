@@ -1,4 +1,4 @@
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -91,7 +91,7 @@ int main(int argc, char **argv)
     }
 
     SDL_Window *window = SDL_CreateWindow(
-        "Wolfenstein 3D - Linux port",
+        "Wolfenstein 3D - port",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
         RENDER_WIDTH * SCALE, RENDER_HEIGHT * SCALE, SDL_WINDOW_SHOWN);
     SDL_Renderer *renderer = window ? SDL_CreateRenderer(window, -1, 0) : NULL;

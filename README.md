@@ -8,9 +8,13 @@ interrupções e assembly de 16 bits.
 O Linux é a primeira plataforma. O suporte a Windows virá depois que o núcleo
 portável estiver funcional.
 
+O suporte Windows descrito abaixo sucede o marco inicial Linux agora que o
+núcleo portátil está funcional.
+
 ## Estado atual
 
 - build nativo em C com CMake;
+- build configurado para Linux e validado no Windows x64 com CMake, MSVC e vcpkg;
 - janela SDL2 e framebuffer de 320×200 escalado;
 - loop de eventos com saída por `Esc`;
 - smoke check executável sem interface gráfica;
@@ -100,6 +104,32 @@ repositório.
 
 Ao executar, a janela mostra a visão 3D do início de `Wolf1 Map1`, com teto,
 chão e paredes do `VSWAP` usando a paleta original.
+
+## Compilar no Windows
+
+Requisitos: Visual Studio 2022 com o workload **Desktop development with C++**,
+CMake 3.16+ e vcpkg. No PowerShell, instale SDL2 para x64 e configure usando o
+toolchain do vcpkg (substitua `C:\src\vcpkg` pelo caminho local):
+
+```powershell
+C:\src\vcpkg\vcpkg.exe install sdl2:x64-windows
+cmake -S . -B build-windows -A x64 `
+  -DCMAKE_TOOLCHAIN_FILE=C:\src\vcpkg\scripts\buildsystems\vcpkg.cmake
+cmake --build build-windows --config Release
+```
+
+Execute a partir da raiz do repositório:
+
+```powershell
+.\build-windows\Release\wolf3d.exe --check
+.\build-windows\Release\wolf3d.exe --data .\data\shareware-v1.4
+ctest --test-dir build-windows -C Release --output-on-failure
+git diff --check
+```
+
+O vcpkg copia as DLLs necessárias do SDL2 para o diretório do executável durante
+o build. O contrato desse build está em
+[`docs/specs/0002-windows-build.md`](docs/specs/0002-windows-build.md).
 
 ## Desenvolvimento orientado por especificações
 
