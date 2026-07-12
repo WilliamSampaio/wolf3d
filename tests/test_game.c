@@ -455,6 +455,32 @@ int main(void)
     door_game.player = (Player){3.25, 2.5, 0.0};
     game_update(&door_game, &use, 0.0);
     assert(door_game.doors[0].action == DOOR_OPENING);
+
+    WolfMap elevator_map = open_map();
+    elevator_map.planes[0][2 * MAP_SIDE + 3] = 21;
+    elevator_map.planes[0][2 * MAP_SIDE + 4] = 90;
+    GameState elevator_game;
+    game_init(&elevator_game, &elevator_map, 1);
+    game_update(&elevator_game, &use, 0.0);
+    assert(elevator_game.level_complete &&
+           elevator_game.map.planes[0][2 * MAP_SIDE + 3] == 22);
+    const Player completed_player = elevator_game.player;
+    game_update(&elevator_game, &forward, 0.05);
+    assert(elevator_game.player.x == completed_player.x &&
+           elevator_game.doors[0].position == 0.0);
+
+    elevator_map = open_map();
+    elevator_map.planes[0][3 * MAP_SIDE + 2] = 21;
+    game_init(&elevator_game, &elevator_map, 1);
+    elevator_game.player.angle = 1.5707963267948966;
+    game_update(&elevator_game, &use, 0.0);
+    assert(!elevator_game.level_complete);
+
+    elevator_map.planes[0][2 * MAP_SIDE + 3] = 21;
+    game_init(&elevator_game, &elevator_map, 1);
+    elevator_game.player.angle = -1.5707963267948966;
+    game_update(&elevator_game, &use, 0.0);
+    assert(!elevator_game.level_complete);
     puts("GAME OK");
     return 0;
 }

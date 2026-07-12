@@ -518,11 +518,30 @@ Critérios de aceitação do M5P:
 2. [x] alvos fora do alcance ou atrás de paredes não são atingidos;
 3. [x] o alvo válido mais próximo recebe dano determinístico;
 4. [x] último disparo de arma de fogo retorna automaticamente à faca;
-5. [ ] faca e troca automática são validadas no primeiro mapa shareware;
+5. [x] faca e troca automática são validadas no primeiro mapa shareware;
 6. [x] build, testes e smoke checks continuam passando.
 
 Ataque contínuo da faca, som, impacto visual, dor e cadências específicas das
 armas permanecem fora do M5P.
+
+### M5Q — contrato de conclusão pelo elevador
+
+- reconhecer a parede de elevador tile 21 somente nas direções leste/oeste;
+- operar o interruptor por borda de pressão de `Space` quando adjacente;
+- trocar o tile para 22, preservando o feedback visual do interruptor;
+- marcar o nível como concluído e congelar a simulação.
+
+Critérios de aceitação do M5Q:
+
+1. [x] elevador adjacente na direção horizontal conclui o nível;
+2. [x] interação vertical, distante ou bloqueada pela orientação não conclui;
+3. [x] interruptor muda de 21 para 22 no mapa renderizado;
+4. [x] jogador, guardas e portas não atualizam após a conclusão;
+5. [ ] elevador é validado visualmente no primeiro mapa shareware;
+6. [x] build, testes e smoke checks continuam passando.
+
+Tela de resultados, bônus, nível secreto, carregamento do próximo mapa e campanha
+permanecem fora do M5Q.
 
 ## Regra de documentação
 

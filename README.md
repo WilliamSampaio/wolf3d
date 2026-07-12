@@ -41,6 +41,7 @@ portável estiver funcional.
 - guardas mortos deixam pentes de munição coletáveis;
 - HUD compacto mostra vida, munição, vidas e pontuação;
 - faca funciona em curta distância e é selecionada quando a munição termina;
+- interruptor do elevador conclui e congela o nível atual;
 - código histórico preservado em `WOLFSRC/`.
 
 O primeiro mapa pode ser explorado com teclado e mouse. Portas abrem com `Space`,

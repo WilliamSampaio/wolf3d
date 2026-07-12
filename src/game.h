@@ -83,6 +83,7 @@ typedef struct {
     double damage_seconds;
     double player_death_seconds;
     uint8_t player_dead;
+    uint8_t level_complete;
     int ammo;
     int lives;
     int score;

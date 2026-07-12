@@ -163,13 +163,20 @@ static void use_adjacent_door(GameState *game)
         operate_door(game, &game->doors[current_door]);
         return;
     }
-    if (fabs(direction_x) >= fabs(direction_y))
+    const int horizontal = fabs(direction_x) >= fabs(direction_y);
+    if (horizontal)
         x += direction_x < 0.0 ? -1 : 1;
     else
         y += direction_y < 0.0 ? -1 : 1;
     if (x < 0 || x >= MAP_SIDE || y < 0 || y >= MAP_SIDE)
         return;
-    const int door_index = game->door_at[y * MAP_SIDE + x];
+    const size_t cell = (size_t)y * MAP_SIDE + x;
+    if (horizontal && game->map.planes[0][cell] == 21) {
+        game->map.planes[0][cell] = 22;
+        game->level_complete = 1;
+        return;
+    }
+    const int door_index = game->door_at[cell];
     if (door_index >= 0)
         operate_door(game, &game->doors[door_index]);
 }
@@ -609,6 +616,8 @@ void game_update(GameState *game, const PlayerCommand *command, double seconds)
         return;
     if (seconds > 0.05)
         seconds = 0.05;
+    if (game->level_complete)
+        return;
     if (game->health <= 0)
         kill_player(game);
     if (game->player_dead) {
