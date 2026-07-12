@@ -16,7 +16,7 @@ portável estiver funcional.
 - smoke check executável sem interface gráfica;
 - validação dos conjuntos de dados shareware (`WL1`) e completo (`WL6`);
 - leitor seguro de `VSWAP` e teste automatizado com arquivo sintético;
-- paleta VGA original e renderização da primeira textura de parede;
+- paleta VGA original extraída do payload OMF e renderização de paredes;
 - renderização validada com os dados shareware v1.4 incluídos em `data/`;
 - descompressão Carmack/RLEW e carregamento dos dois planos do primeiro mapa;
 - visão superior estática com paredes, portas e orientação do jogador;
@@ -40,6 +40,7 @@ portável estiver funcional.
 - morte escurece a tela e permite reiniciar o mapa consumindo uma vida;
 - guardas mortos deixam pentes de munição coletáveis;
 - HUD compacto mostra vida, munição, vidas e pontuação;
+- faca funciona em curta distância e é selecionada quando a munição termina;
 - código histórico preservado em `WOLFSRC/`.
 
 O primeiro mapa pode ser explorado com teclado e mouse. Portas abrem com `Space`,

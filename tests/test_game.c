@@ -264,12 +264,42 @@ int main(void)
     game_update(&weapon_test, &(PlayerCommand){.attack_held = 1}, 0.0);
     assert(weapon_test.weapon_frame == 0);
 
+    weapon_test.ammo = 1;
+    weapon_test.current_weapon = WEAPON_MACHINE_GUN;
+    game_update(&weapon_test, &(PlayerCommand){.attack_pressed = 1}, 0.0);
+    for (int step = 0; step < 7; ++step)
+        game_update(&weapon_test, &(PlayerCommand){0}, 0.05);
+    assert(weapon_test.ammo == 0 &&
+           weapon_test.current_weapon == WEAPON_KNIFE);
+
     game_init(&weapon_test, &map, 1);
     game_update(&weapon_test,
                 &(PlayerCommand){.attack_pressed = 1, .attack_held = 1}, 0.0);
     for (int step = 0; step < 8; ++step)
         game_update(&weapon_test, &(PlayerCommand){.attack_held = 1}, 0.05);
     assert(weapon_test.ammo == 7 && weapon_test.weapon_frame == 0);
+
+    WolfMap knife_map = open_map();
+    knife_map.planes[1][2 * MAP_SIDE + 3] = 108;
+    GameState knife_game;
+    game_init(&knife_game, &knife_map, 1);
+    knife_game.current_weapon = WEAPON_KNIFE;
+    game_update(&knife_game, &(PlayerCommand){.attack_pressed = 1}, 0.0);
+    assert(knife_game.ammo == 8 && knife_game.weapon_frame == 1 &&
+           knife_game.guards[0].health < 25 && knife_game.guards[0].alerted);
+
+    knife_map = open_map();
+    knife_map.planes[1][2 * MAP_SIDE + 4] = 108;
+    game_init(&knife_game, &knife_map, 1);
+    knife_game.current_weapon = WEAPON_KNIFE;
+    game_update(&knife_game, &(PlayerCommand){.attack_pressed = 1}, 0.0);
+    assert(knife_game.guards[0].health == 25);
+
+    knife_game.guards[0].x = 3.7;
+    knife_game.map.planes[0][2 * MAP_SIDE + 3] = 1;
+    knife_game.weapon_frame = 0;
+    game_update(&knife_game, &(PlayerCommand){.attack_pressed = 1}, 0.0);
+    assert(knife_game.guards[0].health == 25);
 
     WolfMap combat_map = open_map();
     combat_map.planes[1][2 * MAP_SIDE + 4] = 110;

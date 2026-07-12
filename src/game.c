@@ -379,9 +379,11 @@ static void drop_guard_clip(GameState *game, const Guard *guard)
 
 static void player_attack(GameState *game)
 {
-    if (game->current_weapon == WEAPON_KNIFE || game->ammo <= 0)
+    const int knife = game->current_weapon == WEAPON_KNIFE;
+    if (!knife && game->ammo <= 0)
         return;
-    --game->ammo;
+    if (!knife)
+        --game->ammo;
     game->weapon_frame = 1;
     game->weapon_seconds = 0.0;
 
@@ -400,6 +402,8 @@ static void player_attack(GameState *game)
         if (forward <= 0.0 || side > forward * 0.1)
             continue;
         const double distance = sqrt(dx * dx + dy * dy);
+        if (knife && distance > 1.5)
+            continue;
         RayHit hit;
         if (raycast_hit(game->map.planes[0], game->door_at, game->doors,
                         game->player.x, game->player.y,
@@ -414,7 +418,7 @@ static void player_attack(GameState *game)
     if (!target)
         return;
 
-    int damage = (int)(game_random(game) & 0xffu) / 4;
+    int damage = (int)(game_random(game) & 0xffu) / (knife ? 16 : 4);
     if (!target->alerted)
         damage *= 2;
     target->alerted = 1;
@@ -436,6 +440,8 @@ static void update_weapon(GameState *game, double seconds)
     if (frame > 4) {
         game->weapon_frame = 0;
         game->weapon_seconds = 0.0;
+        if (game->ammo <= 0 && game->current_weapon != WEAPON_KNIFE)
+            game->current_weapon = WEAPON_KNIFE;
     } else {
         game->weapon_frame = (uint8_t)frame;
     }
@@ -617,6 +623,9 @@ void game_update(GameState *game, const PlayerCommand *command, double seconds)
         return;
     }
     player_rotate(&game->player, command->look_radians);
+    if (!game->weapon_frame && game->ammo <= 0 &&
+        game->current_weapon != WEAPON_KNIFE)
+        game->current_weapon = WEAPON_KNIFE;
     if (!game->weapon_frame && command->requested_weapon >= 1 &&
         command->requested_weapon <= 4) {
         const int weapon = command->requested_weapon - 1;

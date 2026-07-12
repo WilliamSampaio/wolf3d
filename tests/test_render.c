@@ -1,4 +1,5 @@
 #include "render.h"
+#include "game_palette.h"
 
 #include <assert.h>
 #include <stdint.h>
@@ -19,6 +20,12 @@ static void make_map(WolfMap *map)
 
 int main(void)
 {
+    assert(game_palette[0] == 0 && game_palette[1] == 0 &&
+           game_palette[2] == 0);
+    assert(game_palette[3] == 0 && game_palette[4] == 0 &&
+           game_palette[5] == 0x2a);
+    assert(game_palette[765] == 0x26 && game_palette[766] == 0 &&
+           game_palette[767] == 0x22);
     WolfMap map;
     make_map(&map);
     uint8_t wall[WALL_PIXELS];

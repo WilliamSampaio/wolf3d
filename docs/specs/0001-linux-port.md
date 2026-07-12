@@ -98,6 +98,9 @@ Critérios de aceitação do M2:
 3. [x] o build e `--check` continuam funcionando sem dados comerciais;
 4. [x] com dados shareware v1.4, a janela exibe pixels da primeira textura usando a paleta original.
 
+A extração da paleta ignora os três bytes de localização do registro OMF de
+`GAMEPAL.OBJ` e preserva exatamente os 768 bytes RGB do payload.
+
 Validação visual registrada com `data/shareware-v1.4`, obtido do item
 [`wolf3dsw`](https://archive.org/details/wolf3dsw) do Internet Archive. O pacote
 original é preservado em `data/wolf3dsw.zip` com SHA-256
@@ -336,6 +339,7 @@ Critérios de aceitação do M5G:
 4. [x] guardas parados e em patrulha usam a mesma perseguição determinística;
 5. [x] percepção e perseguição são validadas no primeiro mapa shareware;
 6. [x] build, testes e smoke checks continuam passando.
+
 7. [x] a direção escolhida permanece estável durante cada célula de perseguição.
 
 Tempo de reação, abertura de portas, coordenação entre guardas, ataques, dano,
@@ -495,11 +499,30 @@ Critérios de aceitação do M5O:
 2. [x] pistola não repete disparos por pressão contínua;
 3. [x] armas automáticas repetem após cada ciclo de animação;
 4. [x] munição vazia encerra o disparo automático;
-5. [ ] troca e repetição são validadas no primeiro mapa shareware;
+5. [x] troca e repetição são validadas no primeiro mapa shareware;
 6. [x] build, testes e smoke checks continuam passando.
 
 Ataque da faca, cadências diferentes por arma, troca automática sem munição e
 animações fiéis específicas permanecem fora do M5O.
+
+### M5P — contrato da faca e troca sem munição
+
+- animar a faca pelos quatro quadros existentes sem consumir munição;
+- atingir somente o guarda mais próximo da mira em até 1,5 célula;
+- aplicar dano determinístico pelo RNG e alertar o alvo atingido;
+- trocar automaticamente para a faca ao terminar a munição da arma atual.
+
+Critérios de aceitação do M5P:
+
+1. [x] faca anima e causa dano sem alterar munição;
+2. [x] alvos fora do alcance ou atrás de paredes não são atingidos;
+3. [x] o alvo válido mais próximo recebe dano determinístico;
+4. [x] último disparo de arma de fogo retorna automaticamente à faca;
+5. [ ] faca e troca automática são validadas no primeiro mapa shareware;
+6. [x] build, testes e smoke checks continuam passando.
+
+Ataque contínuo da faca, som, impacto visual, dor e cadências específicas das
+armas permanecem fora do M5P.
 
 ## Regra de documentação
 
