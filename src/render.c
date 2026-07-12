@@ -36,13 +36,18 @@ static int compare_distance(const void *left, const void *right)
 
 static size_t guard_sprite(const Guard *guard, const Player *player)
 {
-    static const size_t walking_sprite[4] = {58, 66, 74, 82};
+    static const size_t guard_walking[4] = {58, 66, 74, 82};
+    static const size_t officer_walking[4] = {246, 254, 262, 270};
+    const int officer = guard->kind == ENEMY_OFFICER;
     if (guard->dead) {
-        const int frame = (int)(guard->death_seconds * 70.0 / 15.0);
+        const double frame_time = officer ? 11.0 : 15.0;
+        const int frame = (int)(guard->death_seconds * 70.0 / frame_time);
+        if (officer)
+            return frame < 4 ? 279 + frame : 284;
         return frame < 3 ? 91 + frame : 95;
     }
     if (guard->shooting)
-        return 96 + guard->shoot_frame;
+        return (officer ? 285 : 96) + guard->shoot_frame;
     const double pi = 3.14159265358979323846;
     const double facing = -guard->direction * pi / 2.0;
     double relative = facing - atan2(player->y - guard->y,
@@ -51,8 +56,9 @@ static size_t guard_sprite(const Guard *guard, const Player *player)
         relative += 2.0 * pi;
     while (relative >= 2.0 * pi)
         relative -= 2.0 * pi;
+    const size_t *walking = officer ? officer_walking : guard_walking;
     const size_t base = guard->patrol || guard->alerted
-                            ? walking_sprite[guard->frame] : 50;
+                            ? walking[guard->frame] : officer ? 238 : 50;
     return base + ((int)(relative / (pi / 4.0) + 0.5) & 7);
 }
 

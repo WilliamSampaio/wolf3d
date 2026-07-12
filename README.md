@@ -43,6 +43,7 @@ portável estiver funcional.
 - faca funciona em curta distância e é selecionada quando a munição termina;
 - interruptor do elevador conclui o nível atual;
 - elevador carrega o mapa seguinte preservando o estado da campanha;
+- oficiais usam sprites, resistência, velocidade e pontuação próprias;
 - código histórico preservado em `WOLFSRC/`.
 
 O primeiro mapa pode ser explorado com teclado e mouse. Portas abrem com `Space`,

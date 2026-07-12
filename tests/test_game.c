@@ -91,6 +91,18 @@ int main(void)
         assert(blocked.guards[type].active);
     }
 
+    WolfMap officers = open_map();
+    for (int type = 0; type < 8; ++type)
+        officers.planes[1][5 * MAP_SIDE + type + 1] = 116 + type;
+    game_init(&blocked, &officers, 1);
+    assert(blocked.guard_count == 8);
+    for (int type = 0; type < 8; ++type) {
+        assert(blocked.guards[type].kind == ENEMY_OFFICER);
+        assert(blocked.guards[type].direction == type % 4);
+        assert(blocked.guards[type].patrol == (type >= 4));
+        assert(blocked.guards[type].health == 50);
+    }
+
     WolfMap patrol_map = open_map();
     patrol_map.planes[1][4 * MAP_SIDE + 2] = 112;
     GameState patrol;
@@ -300,6 +312,39 @@ int main(void)
     knife_game.weapon_frame = 0;
     game_update(&knife_game, &(PlayerCommand){.attack_pressed = 1}, 0.0);
     assert(knife_game.guards[0].health == 25);
+
+    WolfMap guard_chase_map = open_map();
+    WolfMap officer_chase_map = open_map();
+    guard_chase_map.planes[1][2 * MAP_SIDE + 7] = 110;
+    officer_chase_map.planes[1][2 * MAP_SIDE + 7] = 118;
+    GameState guard_chase, officer_chase;
+    game_init(&guard_chase, &guard_chase_map, 1);
+    game_init(&officer_chase, &officer_chase_map, 1);
+    game_update(&guard_chase, &(PlayerCommand){0}, 0.05);
+    game_update(&officer_chase, &(PlayerCommand){0}, 0.05);
+    assert(officer_chase.guards[0].x < guard_chase.guards[0].x);
+
+    WolfMap officer_attack_map = open_map();
+    officer_attack_map.planes[1][2 * MAP_SIDE + 4] = 118;
+    game_init(&officer_chase, &officer_attack_map, 1);
+    game_update(&officer_chase, &(PlayerCommand){0}, 0.05);
+    assert(officer_chase.guards[0].shooting);
+    for (int step = 0; step < 8; ++step)
+        game_update(&officer_chase, &(PlayerCommand){0}, 0.05);
+    assert(officer_chase.health < 100 &&
+           officer_chase.guards[0].shoot_frame == 2);
+    for (int step = 0; step < 3; ++step)
+        game_update(&officer_chase, &(PlayerCommand){0}, 0.05);
+    assert(!officer_chase.guards[0].shooting);
+
+    WolfMap officer_combat_map = open_map();
+    officer_combat_map.planes[1][2 * MAP_SIDE + 3] = 116;
+    game_init(&officer_chase, &officer_combat_map, 1);
+    officer_chase.guards[0].health = 1;
+    game_update(&officer_chase, &(PlayerCommand){.attack_pressed = 1}, 0.0);
+    assert(officer_chase.guards[0].dead && officer_chase.score == 400 &&
+           officer_chase.static_count == 1 &&
+           officer_chase.statics[0].kind == STATIC_CLIP);
 
     WolfMap combat_map = open_map();
     combat_map.planes[1][2 * MAP_SIDE + 4] = 110;

@@ -44,6 +44,11 @@ typedef struct {
     StaticKind kind;
 } StaticObject;
 
+typedef enum {
+    ENEMY_GUARD,
+    ENEMY_OFFICER
+} EnemyKind;
+
 typedef struct {
     double x;
     double y;
@@ -55,6 +60,7 @@ typedef struct {
     uint8_t dead;
     uint8_t shooting;
     uint8_t shoot_frame;
+    EnemyKind kind;
     int health;
     double animation_seconds;
     double death_seconds;

@@ -557,11 +557,30 @@ Critérios de aceitação do M5R:
 2. [x] novo mapa recria integralmente seu estado local;
 3. [x] executável carrega o mapa seguinte ao usar o elevador;
 4. [x] falha de carregamento não mantém uma simulação parcialmente reiniciada;
-5. [ ] transição do primeiro para o segundo mapa WL1 é validada manualmente;
+5. [x] transição do primeiro para o segundo mapa WL1 é validada manualmente;
 6. [x] build, testes e smoke checks continuam passando.
 
 Tela de resultados, bônus de tempo/tesouro, nível secreto, seleção de episódio,
 save e campanha WL6 permanecem fora do M5R.
+
+### M5S — contrato dos oficiais
+
+- instanciar oficiais parados e em patrulha pelos códigos 116–123;
+- reutilizar percepção, caminhos, portas, colisão, tiro e drops dos guardas;
+- aplicar sprites, 50 pontos de vida, perseguição 5× e pontuação 400 próprios;
+- respeitar os tempos originais de tiro e sequência de morte dos oficiais.
+
+Critérios de aceitação do M5S:
+
+1. [x] os oito códigos criam oficiais com direção e patrulha corretas;
+2. [x] oficiais usam todos os sprites direcionais, tiro, morte e cadáver próprios;
+3. [x] vida, velocidade, tempos e pontuação diferem dos guardas como no original;
+4. [x] oficiais mortos param, pontuam e deixam munição coletável;
+5. [ ] oficiais são validados visualmente nos mapas shareware;
+6. [x] build, testes e smoke checks continuam passando.
+
+Overlays de dificuldade, cães, SS, mutantes, chefes, sons e comportamento de dor
+permanecem fora do M5S.
 
 ## Regra de documentação
 

@@ -434,7 +434,7 @@ static void player_attack(GameState *game)
         target->dead = 1;
         target->death_seconds = 0.0;
         drop_guard_clip(game, target);
-        game->score += 100;
+        game->score += target->kind == ENEMY_OFFICER ? 400 : 100;
     }
 }
 
@@ -467,11 +467,15 @@ static void kill_player(GameState *game)
 
 static void guard_shoot(GameState *game, Guard *guard, double seconds)
 {
+    const double first_end = guard->kind == ENEMY_OFFICER ? 6.0 : 20.0;
+    const double shot_time = guard->kind == ENEMY_OFFICER ? 26.0 : 40.0;
+    const double total_time = guard->kind == ENEMY_OFFICER ? 36.0 : 60.0;
     const double previous = guard->shoot_seconds;
     guard->shoot_seconds += seconds;
     const double ticks = guard->shoot_seconds * 70.0;
-    guard->shoot_frame = ticks < 20.0 ? 0 : ticks < 40.0 ? 1 : 2;
-    if (previous < 40.0 / 70.0 && guard->shoot_seconds >= 40.0 / 70.0 &&
+    guard->shoot_frame = ticks < first_end ? 0 : ticks < shot_time ? 1 : 2;
+    if (previous < shot_time / 70.0 &&
+        guard->shoot_seconds >= shot_time / 70.0 &&
         guard_sees_player(game, guard)) {
         const double dx = fabs(game->player.x - guard->x);
         const double dy = fabs(game->player.y - guard->y);
@@ -488,7 +492,7 @@ static void guard_shoot(GameState *game, Guard *guard, double seconds)
             game->damage_seconds = 0.15;
         }
     }
-    if (ticks >= 60.0) {
+    if (ticks >= total_time) {
         guard->shooting = 0;
         guard->shoot_frame = 0;
         guard->shoot_seconds = 0.0;
@@ -526,7 +530,9 @@ static void update_guards(GameState *game, double seconds)
         }
 
         if (guard->alerted) {
-            chase_player(game, guard, guard_patrol_speed * 3.0 * seconds);
+            const double multiplier = guard->kind == ENEMY_OFFICER ? 5.0 : 3.0;
+            chase_player(game, guard,
+                         guard_patrol_speed * multiplier * seconds);
         } else {
             if (guard->move_remaining <= 0.0) {
                 guard->x = floor(guard->x) + 0.5;
@@ -585,14 +591,17 @@ void game_init(GameState *game, const WolfMap *map, uint32_t random_seed)
 
     for (size_t cell = 0; cell < MAP_CELLS; ++cell) {
         const uint16_t code = game->map.planes[1][cell];
-        if (code >= 108 && code <= 115) {
+        if (code >= 108 && code <= 123) {
+            const int officer = code >= 116;
+            const uint16_t base = officer ? 116 : 108;
             Guard *guard = &game->guards[game->guard_count++];
             guard->x = cell % MAP_SIDE + 0.5;
             guard->y = cell / MAP_SIDE + 0.5;
-            guard->direction = (code - 108) % 4;
-            guard->patrol = code >= 112;
+            guard->direction = (code - base) % 4;
+            guard->patrol = code >= base + 4;
             guard->active = 1;
-            guard->health = 25;
+            guard->kind = officer ? ENEMY_OFFICER : ENEMY_GUARD;
+            guard->health = officer ? 50 : 25;
             continue;
         }
         if (code < 23 || code > 70)
