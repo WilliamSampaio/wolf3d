@@ -164,6 +164,10 @@ int main(void)
     game.damage_seconds = 0.1;
     render_scene(pixels, &game, &vswap);
     assert(normal_view != pixels[0]);
+    game.player_dead = 1;
+    game.player_death_seconds = 1.0;
+    render_scene(pixels, &game, &vswap);
+    assert(pixels[0] == 0xff000000u);
     puts("RENDER OK");
     return 0;
 }

@@ -388,6 +388,17 @@ static void update_weapon(GameState *game, double seconds)
     }
 }
 
+static void kill_player(GameState *game)
+{
+    if (game->player_dead)
+        return;
+    game->health = 0;
+    game->player_dead = 1;
+    game->player_death_seconds = 0.0;
+    if (game->lives > 0)
+        --game->lives;
+}
+
 static void guard_shoot(GameState *game, Guard *guard, double seconds)
 {
     const double previous = guard->shoot_seconds;
@@ -406,8 +417,8 @@ static void guard_shoot(GameState *game, Guard *guard, double seconds)
             const int divisor = distance < 2 ? 4 : distance < 4 ? 8 : 16;
             const int damage = 1 + (int)(game_random(game) & 0xffu) / divisor;
             game->health -= damage;
-            if (game->health < 0)
-                game->health = 0;
+            if (game->health <= 0)
+                kill_player(game);
             game->damage_seconds = 0.15;
         }
     }
@@ -483,6 +494,7 @@ void game_init(GameState *game, const WolfMap *map, uint32_t random_seed)
     game->map = *map;
     player_init(&game->player, &game->map);
     game->random_state = random_seed ? random_seed : 1;
+    game->initial_random_seed = game->random_state;
     game->health = 100;
     game->ammo = 8;
     game->lives = 3;
@@ -538,6 +550,19 @@ void game_update(GameState *game, const PlayerCommand *command, double seconds)
         return;
     if (seconds > 0.05)
         seconds = 0.05;
+    if (game->health <= 0)
+        kill_player(game);
+    if (game->player_dead) {
+        game->player_death_seconds += seconds;
+        if (command->use_pressed && game->lives > 0) {
+            const WolfMap map = game->map;
+            const uint32_t seed = game->initial_random_seed;
+            const int lives = game->lives;
+            game_init(game, &map, seed);
+            game->lives = lives;
+        }
+        return;
+    }
     player_rotate(&game->player, command->look_radians);
     if (command->use_pressed)
         use_adjacent_door(game);
@@ -551,6 +576,8 @@ void game_update(GameState *game, const PlayerCommand *command, double seconds)
     }
     update_doors(game, seconds);
     update_guards(game, seconds);
+    if (game->player_dead)
+        return;
     player_update(&game->player, game->map.planes[0], game->blocked,
                   game->door_at, game->doors, command->forward,
                   command->turn, seconds);

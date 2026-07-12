@@ -37,6 +37,7 @@ portável estiver funcional.
 - disparos atingem guardas, consomem munição e deixam cadáveres;
 - pistola inicial exibida em primeira pessoa com animação de disparo;
 - guardas próximos atiram e causam dano com feedback visual;
+- morte escurece a tela e permite reiniciar o mapa consumindo uma vida;
 - código histórico preservado em `WOLFSRC/`.
 
 O primeiro mapa pode ser explorado com teclado e mouse. Portas abrem com `Space`,
@@ -69,6 +70,7 @@ cmake --build build
 Controles: `W`/`↑` avança, `S`/`↓` recua, `A`/`←` e `D`/`→` giram, o mouse
 controla a direção horizontal, `Space` opera a porta à frente, `Ctrl` ou botão
 esquerdo dispara e `Esc` encerra.
+Após morrer, `Space` reinicia o mapa enquanto ainda houver vidas.
 
 Verificação rápida:
 

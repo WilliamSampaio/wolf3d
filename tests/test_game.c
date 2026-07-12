@@ -188,7 +188,25 @@ int main(void)
     game_update(&enemy_shot, &(PlayerCommand){0}, 0.05);
     for (int step = 0; step < 12; ++step)
         game_update(&enemy_shot, &(PlayerCommand){0}, 0.05);
-    assert(enemy_shot.health == 0);
+    assert(enemy_shot.health == 0 && enemy_shot.player_dead &&
+           enemy_shot.lives == 2);
+    const Player dead_player = enemy_shot.player;
+    const double dead_guard_x = enemy_shot.guards[0].x;
+    game_update(&enemy_shot, &(PlayerCommand){.forward = 1.0}, 0.05);
+    assert(enemy_shot.player.x == dead_player.x &&
+           enemy_shot.guards[0].x == dead_guard_x &&
+           enemy_shot.player_death_seconds > 0.0);
+    game_update(&enemy_shot, &(PlayerCommand){.use_pressed = 1}, 0.0);
+    assert(!enemy_shot.player_dead && enemy_shot.health == 100 &&
+           enemy_shot.lives == 2 && enemy_shot.guards[0].health == 25);
+
+    game_init(&enemy_shot, &attack_map, 1);
+    enemy_shot.lives = 1;
+    enemy_shot.health = 0;
+    game_update(&enemy_shot, &(PlayerCommand){0}, 0.0);
+    assert(enemy_shot.player_dead && enemy_shot.lives == 0);
+    game_update(&enemy_shot, &(PlayerCommand){.use_pressed = 1}, 0.0);
+    assert(enemy_shot.player_dead);
 
     patrol_map.planes[0][4 * MAP_SIDE + 3] = 107;
     patrol_map.planes[1][4 * MAP_SIDE + 3] = 24;

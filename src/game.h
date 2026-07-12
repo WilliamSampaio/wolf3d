@@ -73,6 +73,7 @@ typedef struct {
     WolfMap map;
     Player player;
     uint32_t random_state;
+    uint32_t initial_random_seed;
     StaticObject statics[MAP_CELLS];
     size_t static_count;
     Guard guards[MAP_CELLS];
@@ -80,6 +81,8 @@ typedef struct {
     uint8_t blocked[MAP_CELLS];
     int health;
     double damage_seconds;
+    double player_death_seconds;
+    uint8_t player_dead;
     int ammo;
     int lives;
     int score;

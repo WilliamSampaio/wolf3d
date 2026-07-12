@@ -232,4 +232,16 @@ void render_scene(uint32_t pixels[RENDER_WIDTH * RENDER_HEIGHT],
                             (color & 0xffu) / 2;
         }
     }
+    if (game->player_dead) {
+        double brightness = 1.0 - game->player_death_seconds;
+        if (brightness < 0.0)
+            brightness = 0.0;
+        for (size_t index = 0; index < RENDER_WIDTH * RENDER_HEIGHT; ++index) {
+            const uint32_t color = pixels[index];
+            const uint32_t red = (uint32_t)(((color >> 16) & 0xffu) * brightness);
+            const uint32_t green = (uint32_t)(((color >> 8) & 0xffu) * brightness);
+            const uint32_t blue = (uint32_t)((color & 0xffu) * brightness);
+            pixels[index] = 0xff000000u | red << 16 | green << 8 | blue;
+        }
+    }
 }

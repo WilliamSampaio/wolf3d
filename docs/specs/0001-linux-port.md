@@ -416,11 +416,32 @@ Critérios de aceitação do M5K:
 2. [x] o tiro ocorre uma vez no segundo quadro e usa o RNG da simulação;
 3. [x] guardas não se movem enquanto atiram e retomam a perseguição ao terminar;
 4. [x] dano ativa feedback visual e respeita o limite de zero de vida;
-5. [ ] ataque é validado visualmente no primeiro mapa shareware;
+5. [x] ataque é validado visualmente no primeiro mapa shareware;
 6. [x] build, testes e smoke checks continuam passando.
 
 HUD, morte/reinício do jogador, dificuldade, áudio, dor e coordenação entre
 guardas permanecem fora do M5K.
+
+### M5L — contrato de morte e reinício do jogador
+
+- entrar em estado de morte quando a vida chegar a zero;
+- interromper movimento, uso, disparos e atualização dos guardas após a morte;
+- escurecer progressivamente a visão durante um segundo;
+- reiniciar o mesmo mapa com `Space`, restaurando o estado inicial e consumindo
+  uma vida;
+- permanecer na tela escura quando não houver vidas restantes.
+
+Critérios de aceitação do M5L:
+
+1. [x] vida zero ativa a morte e congela a simulação;
+2. [x] a visão escurece até preto em um segundo;
+3. [x] `Space` reinicia mapa, jogador, guardas, portas e inventário inicial;
+4. [x] cada reinício consome uma vida e zero vidas impede novo reinício;
+5. [ ] morte e reinício são validados no primeiro mapa shareware;
+6. [x] build, testes e smoke checks continuam passando.
+
+Tela de game over, ranking, checkpoints, menus, áudio e animação de queda
+permanecem fora do M5L.
 
 ## Regra de documentação
 
